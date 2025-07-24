@@ -66,8 +66,8 @@ async function seed() {
         data: {
           email: `customer${i}@example.com`,
           password: hashedPassword,
-          firstName: faker.person.firstName().slice(0, 100),
-          lastName: faker.person.lastName().slice(0, 100),
+          firstName: faker.person.firstName(),
+          lastName: faker.person.lastName(),
           phone: faker.phone.number(),
           role: "CUSTOMER",
           profilePicture: faker.image.avatar(),
@@ -84,11 +84,12 @@ async function seed() {
         const expiresIn3Months = addMonths(now, 3);
 
         // Coupon for referred customer
+        const referralBonus = 10_000;
         await prisma.coupon.create({
           data: {
             userId: customer.id,
             couponCode: generateUniqueCode("REFERRAL", 6),
-            discountAmount: 10000,
+            discountAmount: referralBonus,
             discountPercentage: 0,
             validFrom: now,
             validUntil: expiresIn3Months,
@@ -100,9 +101,9 @@ async function seed() {
         await prisma.point.create({
           data: {
             userId: referredById,
-            pointsEarned: 10000,
+            pointsEarned: referralBonus,
             pointsUsed: 0,
-            balance: 10000,
+            balance: referralBonus,
             description: "Referral bonus",
             expiresAt: expiresIn3Months,
             createdAt: now,

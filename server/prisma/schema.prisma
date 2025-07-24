@@ -64,7 +64,7 @@ model User {
   email          String   @unique @db.VarChar(255)
   password       String   @db.VarChar(255)
   firstName      String   @db.VarChar(100)
-  lastName       String   @db.VarChar(100)
+  lastName       String?  @db.VarChar(100)
   phone          String?  @db.VarChar(20)
   role           UserRole @default(CUSTOMER)
   profilePicture String?  @db.VarChar(500)
@@ -73,16 +73,16 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  referrer  User?  @relation("UserReferral", fields: [referredBy], references: [id])
-  referrals User[] @relation("UserReferral")
+  Referrer  User?  @relation("UserReferral", fields: [referredBy], references: [id])
+  Referrals User[] @relation("UserReferral")
 
-  organizedEvents   Event[]
-  transactions      Transaction[]
-  reviews           Review[]
-  points            Point[]
-  coupons           Coupon[]
-  attendees         Attendee[]
-  pointTransactions PointTransaction[]
+  OrganizedEvents   Event[]
+  Transactions      Transaction[]
+  Reviews           Review[]
+  Points            Point[]
+  Coupons           Coupon[]
+  Attendees         Attendee[]
+  PointTransactions PointTransaction[]
 }
 
 model Event {
@@ -102,12 +102,12 @@ model Event {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
-  organizer    User          @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  ticketTypes  TicketType[]
-  vouchers     Voucher[]
-  transactions Transaction[]
-  reviews      Review[]
-  attendees    Attendee[]
+  Organizer    User          @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  TicketTypes  TicketType[]
+  Vouchers     Voucher[]
+  Transactions Transaction[]
+  Reviews      Review[]
+  Attendees    Attendee[]
 }
 
 model TicketType {
@@ -121,8 +121,8 @@ model TicketType {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  transactionDetails TransactionDetail[]
+  Event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionDetails TransactionDetail[]
 }
 
 model Voucher {
@@ -139,8 +139,8 @@ model Voucher {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  transactionVouchers TransactionVoucher[]
+  Event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionVouchers TransactionVoucher[]
 }
 
 model Coupon {
@@ -155,8 +155,8 @@ model Coupon {
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactionCoupons TransactionCoupon[]
+  User               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  TransactionCoupons TransactionCoupon[]
 }
 
 model Point {
@@ -170,7 +170,7 @@ model Point {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {
@@ -189,13 +189,13 @@ model Transaction {
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 
-  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  transactionDetails  TransactionDetail[]
-  transactionVouchers TransactionVoucher[]
-  transactionCoupons  TransactionCoupon[]
-  attendees           Attendee[]
-  pointTransactions   PointTransaction[]
+  User                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionDetails  TransactionDetail[]
+  TransactionVouchers TransactionVoucher[]
+  TransactionCoupons  TransactionCoupon[]
+  Attendees           Attendee[]
+  PointTransactions   PointTransaction[]
 }
 
 model TransactionDetail {
@@ -207,8 +207,8 @@ model TransactionDetail {
   totalPrice    Decimal  @default(0) @db.Decimal(12, 2)
   createdAt     DateTime @default(now())
 
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  ticketType  TicketType  @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  TicketType  TicketType  @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
 }
 
 model TransactionVoucher {
@@ -218,8 +218,8 @@ model TransactionVoucher {
   discountApplied Decimal  @default(0) @db.Decimal(12, 2)
   createdAt       DateTime @default(now())
 
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  voucher     Voucher     @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  Voucher     Voucher     @relation(fields: [voucherId], references: [id], onDelete: Cascade)
 }
 
 model TransactionCoupon {
@@ -229,8 +229,8 @@ model TransactionCoupon {
   discountApplied Decimal  @default(0) @db.Decimal(12, 2)
   createdAt       DateTime @default(now())
 
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  coupon      Coupon      @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  Coupon      Coupon      @relation(fields: [couponId], references: [id], onDelete: Cascade)
 }
 
 model Review {
@@ -242,8 +242,8 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model Attendee {
@@ -255,9 +255,9 @@ model Attendee {
   status        AttendeeStatus @default(REGISTERED)
   createdAt     DateTime       @default(now())
 
-  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  User        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 model PointTransaction {
@@ -269,6 +269,6 @@ model PointTransaction {
   description   String?              @db.Text
   createdAt     DateTime             @default(now())
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  User        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 }
