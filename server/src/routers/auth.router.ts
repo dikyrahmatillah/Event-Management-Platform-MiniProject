@@ -8,5 +8,6 @@ router.post(
   upload.single("profilePicture"),
   authController.register
 );
+router.post("/login", authController.login);
 
 export default router;
