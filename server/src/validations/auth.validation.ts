@@ -25,3 +25,8 @@ export const registerSchema = z.object({
   // profilePicture: z.url("Profile picture must be a valid URL").optional(),
   referredByCode: z.string().optional(),
 });
+
+export const loginSchema = z.object({
+  email: z.email("Invalid email format"),
+  password: z.string({ error: "Password is required" }),
+});
