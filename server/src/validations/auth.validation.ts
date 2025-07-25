@@ -22,6 +22,6 @@ export const registerSchema = z.object({
     .regex(/^(?:\+62|62|0)8[1-9][0-9]{6,10}$/, "Invalid phone number")
     .optional(),
   role: z.enum(["CUSTOMER", "ORGANIZER"]).default("CUSTOMER"),
-  profilePicture: z.url("Profile picture must be a valid URL").optional(),
+  // profilePicture: z.url("Profile picture must be a valid URL").optional(),
   referredByCode: z.string().optional(),
 });

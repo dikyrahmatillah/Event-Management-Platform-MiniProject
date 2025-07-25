@@ -1,26 +1,36 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Application } from "express";
 import authRouter from "@/routers/auth.router.js";
-import z, { ZodError } from "zod";
+import cors from "cors";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
+import logger from "./utils/logger.js";
 
-const app = express();
-app.use(express.json());
-
-app.use("/api/auth", authRouter);
-
-app.use(
-  (error: Error, request: Request, response: Response, next: NextFunction) => {
-    console.error(error);
-    if (error instanceof ZodError) {
-      return response
-        .status(400)
-        .json({ error: z.flattenError(error).fieldErrors });
-    }
-    response
-      .status(500)
-      .json({ message: error.message || "Internal Server Error" });
+export class App {
+  app: Application;
+  constructor() {
+    this.app = express();
+    this.setupMiddlewares();
+    this.setupRoutes();
+    this.setupErrorHandling();
+    this.app.use(express.json());
   }
-);
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
+  setupMiddlewares() {
+    this.app.use(cors({ origin: "http://localhost:3000" }));
+    this.app.use(express.json());
+  }
+  setupRoutes() {
+    this.app.use("/api/auth", authRouter);
+  }
+
+  setupErrorHandling() {
+    this.app.use(errorMiddleware);
+  }
+
+  listen(port: string) {
+    this.app.listen(port, () => {
+      logger.info(`Server is listening on port: ${port}`);
+    });
+  }
+}
+
+export const app = new App();

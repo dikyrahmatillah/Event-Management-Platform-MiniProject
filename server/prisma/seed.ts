@@ -58,9 +58,7 @@ async function seed() {
     users.push(organizer);
     console.log("✅ Created organizer:", organizer.email);
 
-    // Create 3 customers
     for (let i = 1; i <= 3; i++) {
-      // First customer uses organizer's referral
       const referredById = i === 1 ? organizer.id : null;
       const customer = await prisma.user.create({
         data: {
@@ -78,12 +76,10 @@ async function seed() {
       users.push(customer);
       console.log(`✅ Created customer ${i}:`, customer.email);
 
-      // Referral logic for coupon and points
       if (referredById) {
         const now = new Date();
         const expiresIn3Months = addMonths(now, 3);
 
-        // Coupon for referred customer
         const referralBonus = 10_000;
         await prisma.coupon.create({
           data: {
@@ -97,7 +93,6 @@ async function seed() {
           },
         });
 
-        // Points for referrer
         await prisma.point.create({
           data: {
             userId: referredById,
@@ -117,7 +112,6 @@ async function seed() {
     console.log(`📊 Total users created: ${users.length}`);
     console.log("🔑 All users have password: pass123");
 
-    // Final summary
     const counts = await Promise.all([
       prisma.user.count(),
       prisma.coupon.count(),

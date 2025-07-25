@@ -1,10 +1,10 @@
 import multer from "multer";
 import path from "node:path";
 
-export const uploadProfilePicture = multer({
+export const upload = multer({
   storage: multer.diskStorage({
     destination: (request, file, cb) => {
-      cb(null, "public/");
+      cb(null, "public");
     },
     filename: (request, file, cb) => {
       const uniqueSuffix = `${Date.now()}-${file.originalname}`;
@@ -12,7 +12,7 @@ export const uploadProfilePicture = multer({
     },
   }),
   fileFilter: (request, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
+    const allowedTypes = /jpeg|jpg|png|webp|gif|svg/;
     const extName = path.extname(file.originalname);
     const isValidType = allowedTypes.test(extName);
     if (!isValidType) {

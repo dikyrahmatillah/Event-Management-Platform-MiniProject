@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "dev": "tsx --watch src/app.ts",
+        "dev": "NODE_ENV=development && tsx --watch src/index.ts",
+        "start": "NODE_ENV=production && node dist/index.js",
         "seed": "tsx prisma/seed.ts"
     },
     "keywords": [],
@@ -18,8 +19,11 @@
         "cloudinary": "^2.7.0",
         "cors": "^2.8.5",
         "express": "^5.1.0",
+        "handlebars": "^4.7.8",
         "jsonwebtoken": "^9.0.2",
         "multer": "^2.0.2",
+        "resend": "^4.7.0",
+        "winston": "^3.17.0",
         "zod": "^4.0.5"
     },
     "devDependencies": {

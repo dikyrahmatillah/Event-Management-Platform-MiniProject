@@ -1,13 +1,12 @@
 import { Router } from "express";
-import { getAllUsers, register } from "@/controllers/auth.controller.js";
-import { uploadProfilePicture } from "@/middleware/uploadProfilePicture.middleware.js";
+import { authController } from "@/controllers/auth.controller.js";
+import { upload } from "@/middlewares/upload.middleware.js";
 
 const router = Router();
 router.post(
   "/register",
-  uploadProfilePicture.single("profilePicture"),
-  register
+  upload.single("profilePicture"),
+  authController.register
 );
-router.get("/users", getAllUsers);
 
 export default router;
