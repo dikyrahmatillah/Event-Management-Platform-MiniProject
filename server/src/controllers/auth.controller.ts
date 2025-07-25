@@ -1,45 +1,23 @@
 import { NextFunction, Request, Response } from "express";
-import { prisma } from "@/configs/prisma.config.js";
-import { generateReferralCode } from "@/utils/generateReferralCode.js";
-import { registerSchema } from "@/validations/auth.validation.js";
+import { registerSchema, loginSchema } from "@/validations/auth.validation.js";
 import { AuthService } from "@/services/auth.service.js";
+import { FileService } from "@/services/file.service.js";
 
-export class AuthRegister {
+export class AuthController {
   async register(request: Request, response: Response, next: NextFunction) {
     try {
       const file = request.file;
-      const {
-        email,
-        password,
-        firstName,
-        lastName = "",
-        phone = "",
-        role,
-        referredByCode = "",
-      } = registerSchema.parse(request.body);
+      const data = registerSchema.parse(request.body);
 
-      const referralCode = await generateReferralCode();
-
-      let profilePictureUrl: string;
+      let profilePictureUrl: string | undefined;
       if (file) {
-        profilePictureUrl = await new AuthService().uploadPicture(file.path);
-      } else {
-        const randomIdenticonId = Math.floor(Math.random() * 10_000);
-        profilePictureUrl = `https://github.com/identicons/${randomIdenticonId}.png`;
+        profilePictureUrl = await new FileService().uploadPicture(file.path);
       }
 
       const authService = new AuthService();
       const user = await authService.registerUser({
-        firstName,
-        lastName,
-        email,
-        password,
-        phone,
-        role,
-        referralCode,
+        ...data,
         profilePictureUrl,
-        referredBy: null,
-        referredByCode,
       });
 
       response
@@ -49,19 +27,17 @@ export class AuthRegister {
       next(error);
     }
   }
-}
 
-export async function getAllUsers(
-  request: Request,
-  response: Response,
-  next: NextFunction
-) {
-  try {
-    const users = await prisma.user.findMany();
-    response.status(200).json(users);
-  } catch (error) {
-    next(error);
+  async login(request: Request, response: Response, next: NextFunction) {
+    try {
+      const { email, password } = loginSchema.parse(request.body);
+      const authService = new AuthService();
+      const accessToken = await authService.loginUser(email, password);
+      response.status(200).json({ message: "Login successful", accessToken });
+    } catch (error) {
+      next(error);
+    }
   }
 }
 
-export const authController = new AuthRegister();
+export const authController = new AuthController();

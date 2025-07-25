@@ -12,6 +12,16 @@ export function errorMiddleware(
 ) {
   logger.error(error.message, "error");
 
+  if (error instanceof Error) {
+    logger.error(error.stack || error);
+  } else {
+    logger.error("Non-error thrown:", error);
+  }
+
+  if (error instanceof AppError) {
+    return response.status(error.statusCode).json({ message: error.message });
+  }
+
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     return response
       .status(400)
@@ -24,7 +34,8 @@ export function errorMiddleware(
       code: error.issues[0]?.code,
     });
   }
-  response
-    .status(500)
-    .json({ message: error.message || "Internal Server Error" });
+
+  response.status(500).json({
+    message: error instanceof Error ? error.message : "Unknown error occurred",
+  });
 }

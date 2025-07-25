@@ -1,171 +1,118 @@
 import { prisma } from "@/configs/prisma.config.js";
-import { cloudinary } from "@/configs/cloudinary.config.js";
-import { resend } from "@/configs/resend.config.js";
-import fs from "node:fs/promises";
+import { AppError } from "@/errors/app.error.js";
+import { EmailService } from "@/services/email.service.js";
 import bcrypt from "bcrypt";
-import Handlebars from "handlebars";
+import jwt from "jsonwebtoken";
 
-export interface CreateUserData {
+export interface UserRegistrationData {
   email: string;
   password: string;
   firstName: string;
-  lastName: string;
-  phone: string;
+  lastName?: string;
+  phone?: string;
   role: "CUSTOMER" | "ORGANIZER";
-  referralCode: string;
-  profilePictureUrl?: string;
-  referredBy: number | null;
   referredByCode?: string;
+  profilePictureUrl?: string;
 }
-Handlebars.registerHelper("eq", function (a, b) {
-  return a === b;
-});
 
 export class AuthService {
-  async isEmailExists(email: string) {
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-    return Boolean(user);
-  }
+  constructor(private emailService = new EmailService()) {}
 
-  async hashPassword(password: string) {
-    const saltRounds = 10;
-    return await bcrypt.hash(password, saltRounds);
-  }
-
-  async uploadPicture(filePath: string) {
-    if (!filePath) throw new Error("No file path provided for upload");
-    try {
-      const uploadResult = await cloudinary.uploader.upload(filePath);
-      return uploadResult.secure_url;
-    } finally {
-      await fs.unlink(filePath);
+  async registerUser(data: UserRegistrationData) {
+    if (await prisma.user.findUnique({ where: { email: data.email } })) {
+      throw new AppError("Email already exists", 400);
     }
-  }
 
-  async isReferredByCodeExists(
-    referredByCode?: string
-  ): Promise<number | null> {
-    if (!referredByCode) return null;
-    const referrerUser = await prisma.user.findUnique({
-      where: { referralCode: referredByCode },
+    const referralCode = await this.generateReferralCode();
+    const referredBy = await this.getReferrerId(data.referredByCode);
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const profilePicture =
+      data.profilePictureUrl ||
+      `https://github.com/identicons/${Math.floor(Math.random() * 10_000)}.png`;
+
+    const newUser = await prisma.user.create({
+      data: {
+        email: data.email,
+        password: hashedPassword,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        role: data.role,
+        referralCode,
+        profilePicture,
+        referredBy,
+      },
     });
-    if (!referrerUser) {
-      throw new Error("Invalid referral code");
+
+    if (referredBy) {
+      await this.createReferralCoupon(newUser.id, referralCode);
     }
-    return referrerUser.id;
+
+    await this.emailService.sendWelcomeEmail(newUser);
+
+    const { password, ...userWithoutPassword } = newUser;
+    return userWithoutPassword;
   }
 
-  async generateReferralCode(): Promise<string> {
+  async loginUser(email: string, password: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    const payload = { id: user.id, email: user.email, role: user.role };
+    const accessToken = jwt.sign(
+      payload,
+      process.env.JWT_SECRET_KEY as string,
+      {
+        expiresIn: "1h",
+      }
+    );
+
+    return { accessToken };
+  }
+
+  private async generateReferralCode(): Promise<string> {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const existingUser = await prisma.user.findUnique({
-      where: { referralCode: code },
-    });
-    if (existingUser) {
+    if (await prisma.user.findUnique({ where: { referralCode: code } })) {
       return this.generateReferralCode();
     }
     return code;
   }
 
-  async sendWelcomeEmail(
-    email: string,
-    firstName: string,
-    lastName: string,
-    role: string
-  ) {
-    const template = await fs.readFile(
-      "src/templates/emails/welcome.hbs",
-      "utf-8"
-    );
-    const compiledTemplate = Handlebars.compile(template);
-    const html = compiledTemplate({ firstName, lastName, role });
+  private async getReferrerId(referredByCode?: string) {
+    if (!referredByCode) return null;
 
-    await resend.emails.send({
-      from: "Event Management Platform <onboarding@resend.dev>",
-      to: email,
-      subject: `Welcome to Event Management Platform, ${firstName}!`,
-      html,
+    const referrer = await prisma.user.findUnique({
+      where: { referralCode: referredByCode },
     });
-  }
 
-  async createUser(data: CreateUserData) {
-    const {
-      email,
-      password,
-      firstName,
-      lastName,
-      phone,
-      role,
-      referralCode,
-      profilePictureUrl,
-      referredBy,
-    } = data;
+    if (!referrer) throw new AppError("Invalid referral code", 400);
 
-    const newUser = await prisma.user.create({
+    await prisma.point.create({
       data: {
-        email,
-        password,
-        firstName,
-        lastName,
-        phone,
-        profilePicture: profilePictureUrl,
-        role,
-        referralCode,
-        referredBy,
+        userId: referrer.id,
+        pointsEarned: 10_000,
+        description: "Referral bonus for referring a new user",
+        balance: 10_000,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
-    return newUser;
+    return referrer.id;
   }
 
-  async registerUser({
-    firstName,
-    lastName,
-    email,
-    password,
-    phone,
-    role,
-    referralCode,
-    profilePictureUrl,
-    referredByCode = "",
-  }: CreateUserData) {
-    const existingUser = await this.isEmailExists(email);
-    if (existingUser) {
-      throw new Error("Email already exists");
-    }
-
-    const referredBy = await this.isReferredByCodeExists(referredByCode);
-
-    const hashedPassword = await this.hashPassword(password);
-
-    // if (profilePictureUrl) {
-    //   profilePictureUrl = await this.uploadPicture(profilePictureUrl);
-    // } else {
-    //   const randomIdenticonId = Math.floor(Math.random() * 100_000);
-    //   profilePictureUrl = `https://github.com/identicons/${randomIdenticonId}.png`;
-    // }
-
-    const newUser = await this.createUser({
-      email,
-      password: hashedPassword,
-      firstName,
-      lastName,
-      phone,
-      role,
-      referralCode,
-      profilePictureUrl,
-      referredBy,
+  private async createReferralCoupon(userId: number, referralCode: string) {
+    await prisma.coupon.create({
+      data: {
+        userId,
+        couponCode: `WELCOME-${referralCode}`,
+        discountAmount: 10_000,
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        status: "ACTIVE",
+      },
     });
-
-    await this.sendWelcomeEmail(email, firstName, lastName, role);
-    return {
-      id: newUser.id,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      email: newUser.email,
-      phone: newUser.phone,
-      role: newUser.role,
-      profilePicture: newUser.profilePicture,
-    };
   }
 }
