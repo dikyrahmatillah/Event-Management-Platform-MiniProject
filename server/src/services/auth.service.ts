@@ -26,7 +26,7 @@ export class AuthService {
     const referralCode = await this.generateReferralCode();
     const referredBy = await this.getReferrerId(data.referredByCode);
 
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    const hashedPassword = await this.hashPassword(data.password);
 
     const profilePicture =
       data.profilePictureUrl ||
@@ -74,6 +74,80 @@ export class AuthService {
     return { accessToken };
   }
 
+  async updateProfile(userId: number, profilePictureUrl: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { profilePicture: profilePictureUrl },
+    });
+
+    return {
+      message: "Profile updated successfully",
+    };
+  }
+
+  async changePassword(
+    userId: number,
+    oldPassword: string,
+    newPassword: string
+  ) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
+      throw new AppError("Invalid old password", 401);
+    }
+
+    const hashedNewPassword = await this.hashPassword(newPassword);
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedNewPassword },
+    });
+
+    return {
+      message: "Password updated successfully",
+    };
+  }
+
+  async forgotPassword(email: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET_KEY as string,
+      { expiresIn: "15m" }
+    );
+
+    await this.emailService.sendPasswordResetEmail(user.email, resetToken);
+
+    return { message: "Password reset email sent" };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    let decodedToken;
+    try {
+      decodedToken = jwt.verify(
+        token,
+        process.env.JWT_SECRET_KEY as string
+      ) as { id: number; email: string };
+    } catch (error) {
+      throw new AppError("Invalid or expired token", 400);
+    }
+    const user = await prisma.user.findUnique({
+      where: { id: decodedToken.id, email: decodedToken.email },
+    });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+    const hashedNewPassword = await this.hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNewPassword },
+    });
+    return { message: "Password updated successfully" };
+  }
+
   private async generateReferralCode(): Promise<string> {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     if (await prisma.user.findUnique({ where: { referralCode: code } })) {
@@ -108,11 +182,15 @@ export class AuthService {
       data: {
         userId,
         couponCode: `WELCOME-${referralCode}`,
-        discountAmount: 10_000,
+        discountPercentage: 5,
         validFrom: new Date(),
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         status: "ACTIVE",
       },
     });
+  }
+
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
   }
 }
