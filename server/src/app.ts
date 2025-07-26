@@ -20,7 +20,7 @@ export class App {
     this.app.use(express.json());
   }
   setupRoutes() {
-    this.app.use("/api/auth", authRouter);
+    this.app.use("/api/v1/auth", authRouter);
   }
 
   setupErrorHandling() {

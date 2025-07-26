@@ -24,4 +24,20 @@ export class EmailService {
       html,
     });
   }
+
+  async sendPasswordResetEmail(email: string, token: string) {
+    const template = await fs.readFile(
+      "src/templates/emails/password-reset.hbs",
+      "utf-8"
+    );
+    const compiledTemplate = Handlebars.compile(template);
+    const html = compiledTemplate({ email, token });
+
+    await resend.emails.send({
+      from: "Event Management Platform <onboarding@resend.dev>",
+      to: email,
+      subject: "Password Reset Request",
+      html,
+    });
+  }
 }
