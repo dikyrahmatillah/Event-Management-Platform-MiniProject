@@ -1,3 +1,4 @@
+
 import express, { Application } from "express";
 import authRouter from "@/routers/auth.router.js";
 import cors from "cors";
