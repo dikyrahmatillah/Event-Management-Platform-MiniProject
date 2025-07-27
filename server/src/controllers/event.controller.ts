@@ -28,9 +28,7 @@ export class EventController {
 
       const data = eventSchema.parse(body);
 
-      const event = await this.eventService.createEvent(
-        data as unknown as EventInput
-      );
+      const event = await this.eventService.createEvent(data);
       response
         .status(201)
         .json({ message: "Event created successfully", event });
