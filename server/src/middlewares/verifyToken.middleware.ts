@@ -7,11 +7,11 @@ export function verifyToken(
   next: NextFunction
 ) {
   const authHeader = request.headers.authorization;
-  console.log("Authorization header:", request.headers.authorization);
   if (!authHeader)
     return response.status(401).json({ message: "Missing token" });
 
   const token = authHeader.split(" ")[1];
+
   const user = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
   request.user = user;
   next();

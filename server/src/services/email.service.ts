@@ -9,18 +9,18 @@ export class EmailService {
     });
   }
 
-  async sendWelcomeEmail(user: any) {
+  async sendWelcomeEmail(firstName: string, email: string, role: string) {
     const template = await fs.readFile(
       "src/templates/emails/welcome.hbs",
       "utf-8"
     );
     const compiledTemplate = Handlebars.compile(template);
-    const html = compiledTemplate(user);
+    const html = compiledTemplate({ firstName, role });
 
     await resend.emails.send({
       from: "Event Management Platform <onboarding@resend.dev>",
-      to: user.email,
-      subject: `Welcome to Event Management Platform, ${user.firstName}!`,
+      to: email,
+      subject: `Welcome to Event Management Platform, ${firstName}!`,
       html,
     });
   }
