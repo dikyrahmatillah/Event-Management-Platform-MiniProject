@@ -9,6 +9,7 @@ import {
 } from "@/validations/auth.validation.js";
 import { AuthService } from "@/services/auth.service.js";
 import { FileService } from "@/services/file.service.js";
+import { profile } from "console";
 
 export class AuthController {
   private authService = new AuthService();
@@ -21,16 +22,16 @@ export class AuthController {
   ) => {
     try {
       const file = request.file;
-      const data = registerSchema.parse(request.body);
-
       const profilePictureUrl = file
         ? await this.fileService.uploadPicture(file.path)
         : undefined;
 
-      const user = await this.authService.registerUser({
-        ...data,
-        profilePictureUrl,
+      const data = registerSchema.parse({
+        ...request.body,
+        profilePicture: profilePictureUrl,
       });
+
+      const user = await this.authService.registerUser(data);
 
       response
         .status(201)
@@ -88,13 +89,14 @@ export class AuthController {
         ? await this.fileService.uploadPicture(request.file.path)
         : undefined;
 
-      const { firstName, lastName } = updateProfileSchema.parse(request.body);
+      const data = updateProfileSchema.parse({
+        ...request.body,
+        profilePictureUrl,
+      });
 
       const result = await this.authService.updateProfile(
         request.user.id,
-        firstName,
-        lastName,
-        profilePictureUrl
+        data
       );
       response.status(200).json(result);
     } catch (error) {
