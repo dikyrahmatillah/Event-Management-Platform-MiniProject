@@ -123,6 +123,8 @@ model TicketType {
 
   Event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   TransactionDetails TransactionDetail[]
+
+  @@unique([eventId, typeName])
 }
 
 model Voucher {

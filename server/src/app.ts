@@ -4,6 +4,7 @@ import cors from "cors";
 import logger from "./utils/logger.js";
 import authRouter from "@/routers/auth.router.js";
 import eventRouter from "@/routers/event.router.js";
+import ticketRouter from "@/routers/ticketType.router.js";
 
 export class App {
   app: Application;
@@ -22,6 +23,7 @@ export class App {
   setupRoutes() {
     this.app.use("/api/v1/auth", authRouter);
     this.app.use("/api/v1/events", eventRouter);
+    this.app.use("/api/v1/tickets", ticketRouter);
   }
 
   setupErrorHandling() {
