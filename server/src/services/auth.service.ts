@@ -1,24 +1,17 @@
 import { prisma } from "@/configs/prisma.config.js";
 import { AppError } from "@/errors/app.error.js";
 import { EmailService } from "@/services/email.service.js";
+import {
+  RegisterInput,
+  UpdateProfileInput,
+} from "@/validations/auth.validation.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-
-export interface UserRegistrationData {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName?: string;
-  phone?: string;
-  role: "CUSTOMER" | "ORGANIZER";
-  referredByCode?: string;
-  profilePictureUrl?: string;
-}
 
 export class AuthService {
   constructor(private emailService = new EmailService()) {}
 
-  async registerUser(data: UserRegistrationData) {
+  async registerUser(data: RegisterInput) {
     if (await prisma.user.findUnique({ where: { email: data.email } })) {
       throw new AppError("Email already exists", 400);
     }
@@ -29,7 +22,7 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(data.password);
 
     const profilePicture =
-      data.profilePictureUrl ||
+      data.profilePicture ||
       `https://github.com/identicons/${Math.floor(Math.random() * 10_000)}.png`;
 
     const newUser = await prisma.user.create({
@@ -46,11 +39,13 @@ export class AuthService {
       },
     });
 
-    if (referredBy) {
-      await this.createReferralCoupon(newUser.id, referralCode);
-    }
+    if (referredBy) await this.createReferralCoupon(newUser.id, referralCode);
 
-    await this.emailService.sendWelcomeEmail(newUser);
+    await this.emailService.sendWelcomeEmail(
+      newUser.firstName,
+      newUser.email,
+      newUser.role
+    );
 
     const { password, ...userWithoutPassword } = newUser;
     return userWithoutPassword;
@@ -70,21 +65,50 @@ export class AuthService {
         expiresIn: "1h",
       }
     );
-
     return { accessToken };
   }
 
-  async updateProfile(userId: number, profilePictureUrl: string) {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-
-    const updatedUser = await prisma.user.update({
+  async getPublicProfile(userId: number) {
+    return prisma.user.findUnique({
       where: { id: userId },
-      data: { profilePicture: profilePictureUrl },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        profilePicture: true,
+        role: true,
+      },
     });
+  }
 
-    return {
-      message: "Profile updated successfully",
-    };
+  async getUserProfile(userId: number) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        profilePicture: true,
+      },
+    });
+  }
+
+  async updateProfile(userId: number, data: UpdateProfileInput) {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!existingUser) throw new AppError("User not found", 404);
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...existingUser,
+        ...data,
+      },
+    });
+    return { message: "Profile updated successfully" };
   }
 
   async changePassword(
@@ -98,7 +122,7 @@ export class AuthService {
     }
 
     const hashedNewPassword = await this.hashPassword(newPassword);
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: { password: hashedNewPassword },
     });
@@ -110,9 +134,8 @@ export class AuthService {
 
   async forgotPassword(email: string) {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+    if (!user) throw new AppError("User not found", 404);
+
     const resetToken = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET_KEY as string,
@@ -125,33 +148,33 @@ export class AuthService {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    let decodedToken;
-    try {
-      decodedToken = jwt.verify(
-        token,
-        process.env.JWT_SECRET_KEY as string
-      ) as { id: number; email: string };
-    } catch (error) {
-      throw new AppError("Invalid or expired token", 400);
-    }
-    const user = await prisma.user.findUnique({
-      where: { id: decodedToken.id, email: decodedToken.email },
-    });
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
+    const { id, email } = jwt.verify(
+      token,
+      process.env.JWT_SECRET_KEY as string
+    ) as { id: number; email: string };
+
+    if (!id || !email) throw new AppError("Invalid token", 400);
+
+    const user = await prisma.user.findUnique({ where: { id, email } });
+    if (!user) throw new AppError("User not found", 404);
+
     const hashedNewPassword = await this.hashPassword(newPassword);
     await prisma.user.update({
       where: { id: user.id },
       data: { password: hashedNewPassword },
     });
+
     return { message: "Password updated successfully" };
   }
 
   private async generateReferralCode(): Promise<string> {
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    if (await prisma.user.findUnique({ where: { referralCode: code } })) {
-      return this.generateReferralCode();
+    let code: string = "";
+    let exists = true;
+    while (exists) {
+      code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      exists = !!(await prisma.user.findUnique({
+        where: { referralCode: code },
+      }));
     }
     return code;
   }

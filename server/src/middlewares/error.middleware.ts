@@ -23,6 +23,14 @@ export function errorMiddleware(
   }
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2002") {
+      return response
+        .status(400)
+        .json({
+          message: "Duplicate value violates unique constraint.",
+          code: error.code,
+        });
+    }
     return response
       .status(400)
       .json({ message: error.message, code: error.code });
