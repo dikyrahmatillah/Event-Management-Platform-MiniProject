@@ -1,25 +1,37 @@
 import { NextFunction, Request, Response } from "express";
-import { registerSchema, loginSchema } from "@/validations/auth.validation.js";
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "@/validations/auth.validation.js";
 import { AuthService } from "@/services/auth.service.js";
 import { FileService } from "@/services/file.service.js";
-import { AppError } from "@/errors/app.error.js";
+import { profile } from "console";
 
 export class AuthController {
-  async register(request: Request, response: Response, next: NextFunction) {
+  private authService = new AuthService();
+  private fileService = new FileService();
+
+  register = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
     try {
       const file = request.file;
-      const data = registerSchema.parse(request.body);
+      const profilePictureUrl = file
+        ? await this.fileService.uploadPicture(file.path)
+        : undefined;
 
-      let profilePictureUrl: string | undefined;
-      if (file) {
-        profilePictureUrl = await new FileService().uploadPicture(file.path);
-      }
-
-      const authService = new AuthService();
-      const user = await authService.registerUser({
-        ...data,
-        profilePictureUrl,
+      const data = registerSchema.parse({
+        ...request.body,
+        profilePicture: profilePictureUrl,
       });
+
+      const user = await this.authService.registerUser(data);
 
       response
         .status(201)
@@ -27,50 +39,81 @@ export class AuthController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async login(request: Request, response: Response, next: NextFunction) {
+  login = async (request: Request, response: Response, next: NextFunction) => {
     try {
       const { email, password } = loginSchema.parse(request.body);
-      const authService = new AuthService();
-      const accessToken = await authService.loginUser(email, password);
+      const accessToken = await this.authService.loginUser(email, password);
       response.status(200).json({ message: "Login successful", accessToken });
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async editProfile(request: Request, response: Response, next: NextFunction) {
+  getPublicProfile = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
     try {
-      const file = request.file;
-      if (!file) {
-        throw new AppError("Profile picture is required", 400);
-      }
-      const profilePictureUrl = await new FileService().uploadPicture(
-        file.path
-      );
-      const authService = new AuthService();
+      const userId = Number(request.params.id);
+      const userProfile = await this.authService.getPublicProfile(userId);
+      response.status(200).json(userProfile);
+    } catch (error) {
+      next(error);
+    }
+  };
 
-      const result = await authService.updateProfile(
+  getUserProfile = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = request.user.id;
+      const userProfile = await this.authService.getUserProfile(userId);
+      response.status(200).json(userProfile);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  editProfile = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const profilePictureUrl = request.file
+        ? await this.fileService.uploadPicture(request.file.path)
+        : undefined;
+
+      const data = updateProfileSchema.parse({
+        ...request.body,
+        profilePictureUrl,
+      });
+
+      const result = await this.authService.updateProfile(
         request.user.id,
-        profilePictureUrl
+        data
       );
       response.status(200).json(result);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async changePassword(
+  changePassword = async (
     request: Request,
     response: Response,
     next: NextFunction
-  ) {
+  ) => {
     try {
-      const { oldPassword, newPassword } = request.body;
-      const authService = new AuthService();
-
-      const result = await authService.changePassword(
+      const { oldPassword, newPassword } = changePasswordSchema.parse(
+        request.body
+      );
+      const result = await this.authService.changePassword(
         request.user.id,
         oldPassword,
         newPassword
@@ -79,39 +122,35 @@ export class AuthController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async forgotPassword(
+  forgotPassword = async (
     request: Request,
     response: Response,
     next: NextFunction
-  ) {
+  ) => {
     try {
-      const { email } = request.body;
-      const authService = new AuthService();
-
-      const result = await authService.forgotPassword(email);
+      const { email } = forgotPasswordSchema.parse(request.body);
+      const result = await this.authService.forgotPassword(email);
       response.status(200).json(result);
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  async resetPassword(
+  resetPassword = async (
     request: Request,
     response: Response,
     next: NextFunction
-  ) {
+  ) => {
     try {
-      const { token, newPassword } = request.body;
-      const authService = new AuthService();
-
-      const result = await authService.resetPassword(token, newPassword);
+      const { token, newPassword } = resetPasswordSchema.parse(request.body);
+      const result = await this.authService.resetPassword(token, newPassword);
       response.status(200).json(result);
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
 
 export const authController = new AuthController();
