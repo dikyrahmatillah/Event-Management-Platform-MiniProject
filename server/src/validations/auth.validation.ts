@@ -1,4 +1,3 @@
-import { profile } from "console";
 import { z } from "zod";
 
 export const registerSchema = z.object({
@@ -56,6 +55,10 @@ export const updateProfileSchema = z.object({
     .string()
     .max(100, "Last name cannot exceed 100 characters")
     .optional(),
+  phone: z
+    .string()
+    .regex(/^(?:\+62|62|0)8[1-9][0-9]{6,10}$/, "Invalid phone number")
+    .optional(),
   profilePicture: z.url("Profile picture must be a valid URL").optional(),
 });
 
@@ -69,3 +72,7 @@ export const changePasswordSchema = z.object({
     .regex(/[0-9]/, "New password must contain at least one number")
     .regex(/[\W_]/, "New password must contain at least one special character"),
 });
+
+export type RegisterInput = z.infer<typeof registerSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

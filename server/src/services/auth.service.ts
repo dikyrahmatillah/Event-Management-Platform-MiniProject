@@ -1,14 +1,17 @@
 import { prisma } from "@/configs/prisma.config.js";
 import { AppError } from "@/errors/app.error.js";
 import { EmailService } from "@/services/email.service.js";
-import { UserRegistrationData } from "@/types/user.types.js";
+import {
+  RegisterInput,
+  UpdateProfileInput,
+} from "@/validations/auth.validation.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export class AuthService {
   constructor(private emailService = new EmailService()) {}
 
-  async registerUser(data: UserRegistrationData) {
+  async registerUser(data: RegisterInput) {
     if (await prisma.user.findUnique({ where: { email: data.email } })) {
       throw new AppError("Email already exists", 400);
     }
@@ -19,7 +22,7 @@ export class AuthService {
     const hashedPassword = await this.hashPassword(data.password);
 
     const profilePicture =
-      data.profilePictureUrl ||
+      data.profilePicture ||
       `https://github.com/identicons/${Math.floor(Math.random() * 10_000)}.png`;
 
     const newUser = await prisma.user.create({
@@ -93,18 +96,16 @@ export class AuthService {
     });
   }
 
-  async updateProfile(
-    userId: number,
-    firstName: string,
-    lastName?: string,
-    profilePictureUrl?: string
-  ) {
+  async updateProfile(userId: number, data: UpdateProfileInput) {
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!existingUser) throw new AppError("User not found", 404);
     await prisma.user.update({
       where: { id: userId },
       data: {
-        firstName,
-        lastName,
-        profilePicture: profilePictureUrl,
+        ...existingUser,
+        ...data,
       },
     });
     return { message: "Profile updated successfully" };
