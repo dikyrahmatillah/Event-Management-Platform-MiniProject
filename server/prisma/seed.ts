@@ -22,7 +22,6 @@ async function seed() {
   try {
     console.log("🌱 Starting database seeding...");
 
-    // Clear existing data
     await prisma.pointTransaction.deleteMany();
     await prisma.attendee.deleteMany();
     await prisma.transactionCoupon.deleteMany();
@@ -38,11 +37,9 @@ async function seed() {
     await prisma.user.deleteMany();
     console.log("🧹 Cleared all existing data");
 
-    // Hash password once for all users
     const hashedPassword = await hash("pass123", 10);
     const users = [];
 
-    // Create organizer (first user)
     const organizer = await prisma.user.create({
       data: {
         email: "organizer@example.com",
@@ -58,8 +55,28 @@ async function seed() {
     users.push(organizer);
     console.log("✅ Created organizer:", organizer.email);
 
-    for (let i = 1; i <= 3; i++) {
-      const referredById = i === 1 ? organizer.id : null;
+    const customers: any[] = [];
+
+    // Create the first customer (no referrer)
+    const customer1 = await prisma.user.create({
+      data: {
+        email: `customer1@example.com`,
+        password: hashedPassword,
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        phone: faker.phone.number(),
+        role: "CUSTOMER",
+        profilePicture: faker.image.avatar(),
+        referralCode: generateReferralCode(),
+        referredBy: null,
+      },
+    });
+    users.push(customer1);
+    customers.push(customer1);
+    console.log(`✅ Created customer 1:`, customer1.email);
+
+    // Create next 3 customers, all referred by customer1
+    for (let i = 2; i <= 4; i++) {
       const customer = await prisma.user.create({
         data: {
           email: `customer${i}@example.com`,
@@ -70,42 +87,42 @@ async function seed() {
           role: "CUSTOMER",
           profilePicture: faker.image.avatar(),
           referralCode: generateReferralCode(),
-          referredBy: referredById,
+          referredBy: customer1.id,
         },
       });
       users.push(customer);
+      customers.push(customer);
       console.log(`✅ Created customer ${i}:`, customer.email);
 
-      if (referredById) {
-        const now = new Date();
-        const expiresIn3Months = addMonths(now, 3);
+      // Referral bonus/coupon for referred customers
+      const now = new Date();
+      const expiresIn3Months = addMonths(now, 3);
+      const referralBonus = 10_000;
 
-        const referralBonus = 10_000;
-        await prisma.coupon.create({
-          data: {
-            userId: customer.id,
-            couponCode: generateUniqueCode("REFERRAL", 6),
-            discountAmount: referralBonus,
-            discountPercentage: 0,
-            validFrom: now,
-            validUntil: expiresIn3Months,
-            status: "ACTIVE",
-          },
-        });
+      await prisma.coupon.create({
+        data: {
+          userId: customer.id,
+          couponCode: generateUniqueCode("REFERRAL", 6),
+          discountAmount: referralBonus,
+          discountPercentage: 0,
+          validFrom: now,
+          validUntil: expiresIn3Months,
+          status: "ACTIVE",
+        },
+      });
 
-        await prisma.point.create({
-          data: {
-            userId: referredById,
-            pointsEarned: referralBonus,
-            pointsUsed: 0,
-            balance: referralBonus,
-            description: "Referral bonus",
-            expiresAt: expiresIn3Months,
-            createdAt: now,
-            updatedAt: now,
-          },
-        });
-      }
+      await prisma.point.create({
+        data: {
+          userId: customer1.id,
+          pointsEarned: referralBonus,
+          pointsUsed: 0,
+          balance: referralBonus,
+          description: "Referral bonus",
+          expiresAt: expiresIn3Months,
+          createdAt: now,
+          updatedAt: now,
+        },
+      });
     }
 
     console.log("🎉 Database seeding completed successfully!");
