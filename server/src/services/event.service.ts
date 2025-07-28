@@ -4,32 +4,19 @@ import { EventInput } from "@/validations/event.validation.js";
 
 export class EventService {
   async createEvent(data: EventInput) {
-    const {
-      organizerId,
-      eventName,
-      description,
-      category,
-      location,
-      price,
-      startDate,
-      endDate,
-      totalSeats,
-      availableSeats,
-      imageUrl,
-    } = data;
     const newEvent = await prisma.event.create({
       data: {
-        organizerId,
-        eventName,
-        description,
-        category,
-        location,
-        price,
-        startDate,
-        endDate,
-        totalSeats,
-        availableSeats,
-        imageUrl,
+        organizerId: data.organizerId,
+        eventName: data.eventName,
+        description: data.description,
+        category: data.category,
+        location: data.location,
+        price: data.price,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        totalSeats: data.totalSeats,
+        availableSeats: data.availableSeats,
+        imageUrl: data.imageUrl,
       },
     });
     return newEvent;
