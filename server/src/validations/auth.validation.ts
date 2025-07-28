@@ -24,6 +24,7 @@ export const registerSchema = z.object({
   role: z.enum(["CUSTOMER", "ORGANIZER"]).default("CUSTOMER"),
   profilePicture: z.url("Profile picture must be a valid URL").optional(),
   referredByCode: z.string().optional(),
+  referralCode: z.string().optional(),
 });
 
 export const loginSchema = z.object({
