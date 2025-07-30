@@ -1,5 +1,5 @@
 import { prisma } from "@/configs/prisma.config.js";
-import { CouponInput, couponSchema } from "@/validations/coupon.validation.js";
+import { CouponInput } from "@/validations/coupon.validation.js";
 
 export class CouponService {
   async createCoupon(data: CouponInput) {
