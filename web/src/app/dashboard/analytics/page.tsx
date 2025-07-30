@@ -12,7 +12,7 @@ import { StatisticsMetrics } from "./components/statistics-metrics";
 import { UnifiedAnalytics } from "./components/unified-analytics";
 import { EventPerformanceTable } from "./components/event-performance-table";
 
-export default function Statistics() {
+export default function Analytics() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -28,7 +28,7 @@ export default function Statistics() {
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Statistics</BreadcrumbPage>
+              <BreadcrumbPage>Analytics</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
