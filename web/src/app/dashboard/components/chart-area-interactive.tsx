@@ -139,21 +139,21 @@ const chartConfig = {
 
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile();
-  const [timeRange, setTimeRange] = React.useState("90d");
+  const [timeRange, setTimeRange] = React.useState("last-7-days");
 
   React.useEffect(() => {
     if (isMobile) {
-      setTimeRange("7d");
+      setTimeRange("last-7-days");
     }
   }, [isMobile]);
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date);
     const referenceDate = new Date("2024-06-30");
-    let daysToSubtract = 90;
-    if (timeRange === "30d") {
+    let daysToSubtract = 60;
+    if (timeRange === "last-month") {
       daysToSubtract = 30;
-    } else if (timeRange === "7d") {
+    } else if (timeRange === "last-7-days") {
       daysToSubtract = 7;
     }
     const startDate = new Date(referenceDate);
@@ -179,9 +179,9 @@ export function ChartAreaInteractive() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value="last-7-days">Last 7 Days</ToggleGroupItem>
+            <ToggleGroupItem value="this-month">This Month</ToggleGroupItem>
+            <ToggleGroupItem value="last-month">Last Month</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
@@ -189,17 +189,17 @@ export function ChartAreaInteractive() {
               size="sm"
               aria-label="Select a value"
             >
-              <SelectValue placeholder="Last 3 months" />
+              <SelectValue placeholder="Last 7 days" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
+              <SelectItem value="last-7-days" className="rounded-lg">
                 Last 7 days
+              </SelectItem>
+              <SelectItem value="this-month" className="rounded-lg">
+                This Month
+              </SelectItem>
+              <SelectItem value="last-month" className="rounded-lg">
+                Last Month
               </SelectItem>
             </SelectContent>
           </Select>

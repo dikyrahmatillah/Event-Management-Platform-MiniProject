@@ -26,7 +26,7 @@ const data = {
       url: "/dashboard",
       items: [
         { title: "Overview", url: "/dashboard" },
-        { title: "Statistics", url: "/dashboard/statistics" },
+        { title: "Analytics", url: "/dashboard/analytics" },
         { title: "Attendees", url: "/dashboard/attendees" },
       ],
     },
