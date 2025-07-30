@@ -9,7 +9,6 @@ import {
 } from "@/validations/auth.validation.js";
 import { AuthService } from "@/services/auth.service.js";
 import { FileService } from "@/services/file.service.js";
-import { profile } from "console";
 
 export class AuthController {
   private authService = new AuthService();
@@ -131,7 +130,7 @@ export class AuthController {
   ) => {
     try {
       const { email } = forgotPasswordSchema.parse(request.body);
-      const result = await this.authService.forgotPassword(email);
+      const result = await this.authService.sendPasswordReset(email);
       response.status(200).json(result);
     } catch (error) {
       next(error);
