@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { usePathname } from "next/navigation";
 
 import { SearchForm } from "./search-form";
 import { VersionSwitcher } from "./version-switcher";
@@ -15,7 +18,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-// This is sample data.
 const data = {
   versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
   navMain: [
@@ -23,7 +25,7 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       items: [
-        { title: "Overview", url: "/dashboard", isActive: true },
+        { title: "Overview", url: "/dashboard" },
         { title: "Statistics", url: "/dashboard/statistics" },
         { title: "Attendees", url: "/dashboard/attendees" },
       ],
@@ -65,6 +67,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -75,16 +79,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SearchForm />
       </SidebarHeader>
       <SidebarContent>
-        {/* We create a SidebarGroup for each parent. */}
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={item.isActive}>
-                      <a href={item.url}>{item.title}</a>
+                {item.items.map((subItem) => (
+                  <SidebarMenuItem key={subItem.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === subItem.url}
+                    >
+                      <a href={subItem.url}>{subItem.title}</a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}

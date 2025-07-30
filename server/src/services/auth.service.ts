@@ -24,7 +24,9 @@ export class AuthService {
     }
 
     if (data.role === "CUSTOMER") {
-      referralCode = await this.generateReferralCode();
+      referralCode = await this.generateReferralCode(
+        data.firstName + data.lastName
+      );
       if (data.referredByCode) {
         referredBy = await this.getReferrerId(data.referredByCode);
       }
@@ -167,12 +169,12 @@ export class AuthService {
     return { message: "Password updated successfully" };
   }
 
-  private async generateReferralCode(): Promise<string> {
+  private async generateReferralCode(name: string) {
     let code: string;
     let exists = true;
 
     while (exists) {
-      code = Math.random().toString(36).substring(2, 8).toUpperCase();
+      code = `${name.toUpperCase().replace(/\s+/g, "").slice(0, 4)}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
       const existing = await prisma.user.findUnique({
         where: { referralCode: code },
       });
