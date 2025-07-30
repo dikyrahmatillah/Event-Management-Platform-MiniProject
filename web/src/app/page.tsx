@@ -1,7 +1,7 @@
 import Navbar from "@/components/ui/organism/navbar";
 import SearchBar from "@/components/ui/organism/search-bar";
 import EventCard from "@/components/event-components/event-card";
-// import Image from "next/image";
+
 export default function Home() {
   return (
     <>

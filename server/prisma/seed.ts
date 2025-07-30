@@ -37,7 +37,7 @@ async function seed() {
     await prisma.user.deleteMany();
     console.log("🧹 Cleared all existing data");
 
-    const hashedPassword = await hash("pass123", 10);
+    const hashedPassword = await hash("Pass123!", 10);
     const users = [];
 
     const organizer = await prisma.user.create({
@@ -57,7 +57,6 @@ async function seed() {
 
     const customers: any[] = [];
 
-    // Create the first customer (no referrer)
     const customer1 = await prisma.user.create({
       data: {
         email: `customer1@example.com`,
@@ -75,7 +74,6 @@ async function seed() {
     customers.push(customer1);
     console.log(`✅ Created customer 1:`, customer1.email);
 
-    // Create next 3 customers, all referred by customer1
     for (let i = 2; i <= 4; i++) {
       const customer = await prisma.user.create({
         data: {
