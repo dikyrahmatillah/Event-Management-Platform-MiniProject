@@ -51,7 +51,15 @@ export class AttendeeService {
     limit = 20,
     status?: AttendeeInput["status"]
   ) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
     const { skip, take } = this.getPagination(page, limit);
+
     return prisma.attendee.findMany({
       where: {
         userId,
@@ -68,6 +76,14 @@ export class AttendeeService {
     limit = 20,
     status?: AttendeeInput["status"]
   ) {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      throw new AppError("Transaction not found", 404);
+    }
+
     const { skip, take } = this.getPagination(page, limit);
     return prisma.attendee.findMany({
       where: {
@@ -98,6 +114,7 @@ export class AttendeeService {
     if (!existingAttendee) {
       throw new AppError("Attendee not found", 404);
     }
+
     const updateStatus = attendeeUpdateSchema.parse(status);
     return prisma.attendee.update({
       where: { id: attendeeId },
@@ -106,55 +123,46 @@ export class AttendeeService {
   }
 
   async deleteAttendee(attendeeId: number) {
-    const attendee = await prisma.attendee.findUnique({
+    const existingAttendee = await prisma.attendee.findUnique({
       where: { id: attendeeId },
     });
 
-    if (!attendee) {
+    if (!existingAttendee) {
       throw new AppError("Attendee not found", 404);
     }
+
     return prisma.attendee.delete({
       where: { id: attendeeId },
     });
   }
 
   async deleteAttendeesByUserId(userId: number) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user) {
-      throw new AppError("User not found", 404);
-    }
     return prisma.attendee.deleteMany({
       where: { userId },
     });
   }
 
   async deleteAttendeesByTransactionId(transactionId: number) {
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-    });
-
-    if (!transaction) {
-      throw new AppError("Transaction not found", 404);
-    }
     return prisma.attendee.deleteMany({
       where: { transactionId },
     });
   }
 
   async deleteAttendeesByEventId(eventId: number) {
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-    });
-
-    if (!event) {
-      throw new AppError("Event not found", 404);
-    }
     return prisma.attendee.deleteMany({
       where: { eventId },
     });
+  }
+
+  async countAttendees(
+    filter: {
+      eventId?: number;
+      userId?: number;
+      transactionId?: number;
+      status?: AttendeeInput["status"]; // Add status
+    } = {}
+  ) {
+    return prisma.attendee.count({ where: { ...filter } });
   }
 
   getPagination(page = 1, limit = 20) {
