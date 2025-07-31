@@ -2,7 +2,6 @@ import { AttendeeService } from "@/services/attendee.service.js";
 import {
   attendeeSchema,
   attendeeUpdateSchema,
-  AttendeeInput,
 } from "@/validations/attendee.validation.js";
 import { NextFunction, Request, Response } from "express";
 
@@ -17,7 +16,10 @@ export class AttendeeController {
     try {
       const validated = attendeeSchema.parse(request.body);
       const attendee = await this.attendeeService.createAttendee(validated);
-      response.status(201).json(attendee);
+      response.status(201).json({
+        message: "Attendee created successfully",
+        data: attendee,
+      });
     } catch (error) {
       next(error);
     }
@@ -37,7 +39,15 @@ export class AttendeeController {
         page,
         limit
       );
-      response.status(200).json(attendees);
+      const totalAttendees = await this.attendeeService.countAttendees({
+        eventId,
+      });
+      response.status(200).json({
+        data: attendees,
+        page: Number(page),
+        limit: Number(limit),
+        totalPage: Math.ceil(totalAttendees / Number(limit)),
+      });
     } catch (error) {
       next(error);
     }
@@ -57,7 +67,15 @@ export class AttendeeController {
         page,
         limit
       );
-      response.status(200).json(attendees);
+      const totalAttendees = await this.attendeeService.countAttendees({
+        userId,
+      });
+      response.status(200).json({
+        data: attendees,
+        page: Number(page),
+        limit: Number(limit),
+        totalPage: Math.ceil(totalAttendees / Number(limit)),
+      });
     } catch (error) {
       next(error);
     }
@@ -77,7 +95,15 @@ export class AttendeeController {
         page,
         limit
       );
-      response.status(200).json(attendees);
+      const totalAttendees = await this.attendeeService.countAttendees({
+        transactionId,
+      });
+      response.status(200).json({
+        data: attendees,
+        page: Number(page),
+        limit: Number(limit),
+        totalPage: Math.ceil(totalAttendees / Number(limit)),
+      });
     } catch (error) {
       next(error);
     }
@@ -91,7 +117,7 @@ export class AttendeeController {
     try {
       const attendeeId = Number(request.params.attendeeId);
       const attendee = await this.attendeeService.getAttendeeById(attendeeId);
-      response.status(200).json(attendee);
+      response.status(200).json({ data: attendee });
     } catch (error) {
       next(error);
     }
@@ -109,7 +135,10 @@ export class AttendeeController {
         attendeeId,
         status
       );
-      response.status(200).json(updatedAttendee);
+      response.status(200).json({
+        message: "Attendee updated successfully",
+        data: updatedAttendee,
+      });
     } catch (error) {
       next(error);
     }

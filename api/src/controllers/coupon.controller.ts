@@ -1,5 +1,5 @@
 import { CouponService } from "@/services/coupon.service.js";
-import { CouponInput, couponSchema } from "@/validations/coupon.validation.js";
+import { couponSchema } from "@/validations/coupon.validation.js";
 import { NextFunction, Request, Response } from "express";
 
 export class CouponController {
@@ -10,7 +10,9 @@ export class CouponController {
       const data = { ...request.body, userId: request.user.id };
       const validatedData = couponSchema.parse(data);
       const coupon = await this.couponService.createCoupon(validatedData);
-      return response.status(201).json(coupon);
+      return response
+        .status(201)
+        .json({ message: "Coupon created successfully" });
     } catch (error) {
       next(error);
     }

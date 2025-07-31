@@ -10,10 +10,10 @@ router.get(
   "/transaction/:transactionId",
   attendeeController.getAttendeesByTransactionId
 );
+router.delete("/event/:eventId", attendeeController.deleteAttendeesByEventId);
+router.delete("/user/:userId", attendeeController.deleteAttendeesByUserId);
 router.get("/:attendeeId", attendeeController.getAttendeeById);
 router.put("/:attendeeId", attendeeController.updateAttendee);
 router.delete("/:attendeeId", attendeeController.deleteAttendee);
-router.delete("/event/:eventId", attendeeController.deleteAttendeesByEventId);
-router.delete("/user/:userId", attendeeController.deleteAttendeesByUserId);
 
 export default router;
