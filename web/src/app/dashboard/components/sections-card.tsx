@@ -41,10 +41,12 @@ export function SectionCards({ timeRange }: SectionCardsProps) {
   startDate.setDate(startDate.getDate() - daysToSubtract);
 
   function filterDataByDate(data, startDate) {
+
     return data.filter((item) => new Date(item.date) >= startDate);
-  }
+
 
   const filteredData = filterDataByDate(chartData, startDate);
+
 
   const revenueThisMonth = filteredData.reduce(
     (acc, item) => acc + item.revenue,
@@ -54,6 +56,7 @@ export function SectionCards({ timeRange }: SectionCardsProps) {
     (acc, item) => acc + item.tickets,
     0
   );
+
   return (
     <div className="*:data-[slot=card]:from-primary/4 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @3xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
