@@ -5,11 +5,6 @@ import { Router } from "express";
 
 const router = Router();
 
-router.post(
-  "/create",
-  verifyToken,
-  verifyOrganizer,
-  ticketController.createTickets
-);
+router.post("/", verifyToken, verifyOrganizer, ticketController.createTickets);
 
 export default router;
