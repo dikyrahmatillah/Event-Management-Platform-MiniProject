@@ -16,7 +16,10 @@ export class AttendeeController {
     try {
       const validated = attendeeSchema.parse(request.body);
       const attendee = await this.attendeeService.createAttendee(validated);
-      response.status(201).json({ data: attendee });
+      response.status(201).json({
+        message: "Attendee created successfully",
+        data: attendee,
+      });
     } catch (error) {
       next(error);
     }
@@ -132,7 +135,10 @@ export class AttendeeController {
         attendeeId,
         status
       );
-      response.status(200).json({ data: updatedAttendee });
+      response.status(200).json({
+        message: "Attendee updated successfully",
+        data: updatedAttendee,
+      });
     } catch (error) {
       next(error);
     }
