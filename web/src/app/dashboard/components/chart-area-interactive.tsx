@@ -72,6 +72,7 @@ export function ChartAreaInteractive({
   }, [isMobile, onTimeRangeChange]);
 
   const filteredData = chartData.filter((item) => {
+
     const itemDate = new Date(item.date);
     const today = startOfDay(new Date());
 
@@ -92,6 +93,7 @@ export function ChartAreaInteractive({
     } else {
       const startDate = subDays(today, 7);
       return isAfter(itemDate, startDate) || isEqual(itemDate, startDate);
+
     }
   });
 
