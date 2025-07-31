@@ -40,20 +40,14 @@ export function SectionCards({ timeRange }: SectionCardsProps) {
   const startDate = new Date(referenceDate);
   startDate.setDate(startDate.getDate() - daysToSubtract);
 
-  const revenueThisMonth = chartData.reduce((acc, item) => {
-    if (new Date(item.date) >= startDate) {
-      return acc + item.revenue;
-    }
-    return acc;
-  }, 0);
+  function filterDataByDate(data, startDate) {
+    return data.filter(item => new Date(item.date) >= startDate);
+  }
 
-  const ticketsSoldThisMonth = chartData.reduce((acc, item) => {
-    if (new Date(item.date) >= startDate) {
-      return acc + item.tickets;
-    }
-    return acc;
-  }, 0);
+  const filteredData = filterDataByDate(chartData, startDate);
 
+  const revenueThisMonth = filteredData.reduce((acc, item) => acc + item.revenue, 0);
+  const ticketsSoldThisMonth = filteredData.reduce((acc, item) => acc + item.tickets, 0);
   return (
     <div className="*:data-[slot=card]:from-primary/4 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @3xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
