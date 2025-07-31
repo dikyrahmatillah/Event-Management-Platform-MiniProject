@@ -106,7 +106,7 @@ export function ChartAreaInteractive({
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Revenue & Ticket Sales Analytics</CardTitle>
+        <CardTitle>Revenue & Ticket Sales Analytics test</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
             Event performance for {timeRangeLabels[timeRange]}
