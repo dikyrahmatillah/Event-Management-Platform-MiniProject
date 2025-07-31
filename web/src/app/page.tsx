@@ -12,7 +12,7 @@ export default function Home() {
         </div>
       </div>
       <p className="font-mono font-semibold text-xl md:text-2xl lg:text-3xl">
-        Explore Event
+        Explore Event data
       </p>
       <div className="w-full flex flex-wrap py-8 justify-stretch">
         <EventCard />
