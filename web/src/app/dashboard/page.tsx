@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { SectionCards } from "@/app/dashboard/components/sections-card";
-import { ChartAreaInteractive } from "@/app/dashboard/components/chart-area-interactive";
 import { RecentTransactions } from "@/app/dashboard/components/recent-transactions";
 import { UpcomingEvents } from "@/app/dashboard/components/upcoming-events";
 import { EventReviews } from "@/app/dashboard/components/event-reviews";

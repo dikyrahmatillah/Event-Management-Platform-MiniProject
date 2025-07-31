@@ -2,6 +2,13 @@
 
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import {
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  subDays,
+  isWithinInterval,
+} from "date-fns";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -63,23 +70,29 @@ export function ChartAreaInteractive({
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date);
+    const now = new Date();
 
-    const dateNow = new Date();
-    const referenceDate = new Date(
-      dateNow.getFullYear(),
-      dateNow.getMonth(),
-      dateNow.getDate()
-    );
-    let daysToSubtract = 7;
-    if (timeRange === "this-month") {
-      daysToSubtract = 30;
+    if (timeRange === "last-7-days") {
+      const sevenDaysAgo = subDays(now, 7);
+      return isWithinInterval(date, { start: sevenDaysAgo, end: now });
+    } else if (timeRange === "this-month") {
+      const thisMonthStart = startOfMonth(now);
+      const thisMonthEnd = endOfMonth(now);
+      return isWithinInterval(date, {
+        start: thisMonthStart,
+        end: thisMonthEnd,
+      });
     } else if (timeRange === "last-month") {
-      referenceDate.setMonth(referenceDate.getMonth() - 1);
-      daysToSubtract = 30;
+      const lastMonthDate = subMonths(now, 1);
+      const lastMonthStart = startOfMonth(lastMonthDate);
+      const lastMonthEnd = endOfMonth(lastMonthDate);
+      return isWithinInterval(date, {
+        start: lastMonthStart,
+        end: lastMonthEnd,
+      });
     }
-    const startDate = new Date(referenceDate);
-    startDate.setDate(startDate.getDate() - daysToSubtract);
-    return date >= startDate;
+
+    return false;
   });
 
   const timeRangeLabels: Record<string, string> = {
