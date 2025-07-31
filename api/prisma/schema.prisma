@@ -1,0 +1,276 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  ORGANIZER
+}
+
+enum EventStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+}
+
+enum VoucherStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum CouponStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+enum TransactionStatus {
+  WAITING_PAYMENT
+  WAITING_CONFIRMATION
+  DONE
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum AttendeeStatus {
+  REGISTERED
+  ATTENDED
+  NO_SHOW
+}
+
+enum PointTransactionType {
+  EARNED
+  USED
+  REFUNDED
+  EXPIRED
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String   @unique @db.VarChar(255)
+  password       String   @db.VarChar(255)
+  firstName      String   @db.VarChar(100)
+  lastName       String?  @db.VarChar(100)
+  phone          String?  @db.VarChar(20)
+  role           UserRole @default(CUSTOMER)
+  profilePicture String?  @db.VarChar(500)
+  referralCode   String?  @unique @db.VarChar(20)
+  referredBy     Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  Referrer  User?  @relation("UserReferral", fields: [referredBy], references: [id])
+  Referrals User[] @relation("UserReferral")
+
+  OrganizedEvents   Event[]
+  Transactions      Transaction[]
+  Reviews           Review[]
+  Points            Point[]
+  Coupons           Coupon[]
+  Attendees         Attendee[]
+  PointTransactions PointTransaction[]
+}
+
+model Event {
+  id             Int         @id @default(autoincrement())
+  organizerId    Int
+  eventName      String      @db.VarChar(255)
+  description    String?     @db.Text
+  category       String?     @db.VarChar(100)
+  location       String      @db.VarChar(255)
+  price          Decimal     @default(0) @db.Decimal(12, 2)
+  startDate      DateTime
+  endDate        DateTime
+  totalSeats     Int         @default(0)
+  availableSeats Int         @default(0)
+  imageUrl       String?     @db.VarChar(500)
+  status         EventStatus @default(ACTIVE)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  Organizer    User          @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  TicketTypes  TicketType[]
+  Vouchers     Voucher[]
+  Transactions Transaction[]
+  Reviews      Review[]
+  Attendees    Attendee[]
+}
+
+model TicketType {
+  id                Int      @id @default(autoincrement())
+  eventId           Int
+  typeName          String   @db.VarChar(100)
+  description       String?  @db.Text
+  price             Decimal  @default(0) @db.Decimal(12, 2)
+  quantity          Int      @default(0)
+  availableQuantity Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  Event              Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionDetails TransactionDetail[]
+
+  @@unique([eventId, typeName])
+}
+
+model Voucher {
+  id                 Int           @id @default(autoincrement())
+  eventId            Int
+  voucherCode        String        @unique @db.VarChar(50)
+  discountAmount     Decimal?      @default(0) @db.Decimal(12, 2)
+  discountPercentage Decimal?      @default(0) @db.Decimal(5, 2)
+  usageLimit         Int           @default(1)
+  usedCount          Int           @default(0)
+  validFrom          DateTime
+  validUntil         DateTime
+  status             VoucherStatus @default(ACTIVE)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  Event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionVouchers TransactionVoucher[]
+}
+
+model Coupon {
+  id                 Int          @id @default(autoincrement())
+  userId             Int
+  couponCode         String       @unique @db.VarChar(50)
+  discountAmount     Decimal?     @default(0) @db.Decimal(12, 2)
+  discountPercentage Decimal?     @default(0) @db.Decimal(5, 2)
+  validFrom          DateTime
+  validUntil         DateTime
+  status             CouponStatus @default(ACTIVE)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  User               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  TransactionCoupons TransactionCoupon[]
+}
+
+model Point {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  pointsEarned Int      @default(0)
+  pointsUsed   Int      @default(0)
+  balance      Int      @default(0)
+  description  String?  @db.Text
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id              Int               @id @default(autoincrement())
+  userId          Int
+  eventId         Int
+  transactionCode String            @unique @db.VarChar(50)
+  quantity        Int               @default(1)
+  subtotal        Decimal           @default(0) @db.Decimal(12, 2)
+  discountAmount  Decimal           @default(0) @db.Decimal(12, 2)
+  pointsUsed      Int               @default(0)
+  finalAmount     Decimal           @default(0) @db.Decimal(12, 2)
+  status          TransactionStatus @default(WAITING_PAYMENT)
+  paymentProof    String?           @db.VarChar(500)
+  paymentDeadline DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  User                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event               Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  TransactionDetails  TransactionDetail[]
+  TransactionVouchers TransactionVoucher[]
+  TransactionCoupons  TransactionCoupon[]
+  Attendees           Attendee[]
+  PointTransactions   PointTransaction[]
+}
+
+model TransactionDetail {
+  id            Int      @id @default(autoincrement())
+  transactionId Int
+  ticketTypeId  Int
+  quantity      Int      @default(1)
+  unitPrice     Decimal  @default(0) @db.Decimal(12, 2)
+  totalPrice    Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt     DateTime @default(now())
+
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  TicketType  TicketType  @relation(fields: [ticketTypeId], references: [id], onDelete: Cascade)
+}
+
+model TransactionVoucher {
+  id              Int      @id @default(autoincrement())
+  transactionId   Int
+  voucherId       Int
+  discountApplied Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt       DateTime @default(now())
+
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  Voucher     Voucher     @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+}
+
+model TransactionCoupon {
+  id              Int      @id @default(autoincrement())
+  transactionId   Int
+  couponId        Int
+  discountApplied Decimal  @default(0) @db.Decimal(12, 2)
+  createdAt       DateTime @default(now())
+
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  Coupon      Coupon      @relation(fields: [couponId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  eventId   Int
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Attendee {
+  id            Int            @id @default(autoincrement())
+  transactionId Int
+  userId        Int
+  eventId       Int
+  attendedAt    DateTime?
+  status        AttendeeStatus @default(REGISTERED)
+  createdAt     DateTime       @default(now())
+
+  Transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  User        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model PointTransaction {
+  id            Int                  @id @default(autoincrement())
+  userId        Int
+  transactionId Int?
+  pointsAmount  Int
+  type          PointTransactionType
+  description   String?              @db.Text
+  createdAt     DateTime             @default(now())
+
+  User        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+}
