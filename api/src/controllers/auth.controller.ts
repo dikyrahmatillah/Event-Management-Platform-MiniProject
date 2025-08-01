@@ -35,7 +35,11 @@ export class AuthController {
       response
         .status(201)
 <<<<<<< HEAD
+<<<<<<< HEAD
         .json({ message: "User registered successfully", user });
+=======
+        .json({ message: "User registered successfully", data: user });
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
 =======
         .json({ message: "User registered successfully", data: user });
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
@@ -49,7 +53,13 @@ export class AuthController {
       const { email, password } = loginSchema.parse(request.body);
       const accessToken = await this.authService.loginUser(email, password);
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json({ message: "Login successful", accessToken });
+=======
+      response
+        .status(200)
+        .json({ message: "Login successful", data: { accessToken } });
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
 =======
       response
         .status(200)
@@ -69,7 +79,11 @@ export class AuthController {
       const userId = Number(request.params.id);
       const userProfile = await this.authService.getPublicProfile(userId);
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(userProfile);
+=======
+      response.status(200).json({ data: userProfile });
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
 =======
       response.status(200).json({ data: userProfile });
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
@@ -87,7 +101,11 @@ export class AuthController {
       const userId = request.user.id;
       const userProfile = await this.authService.getUserProfile(userId);
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(userProfile);
+=======
+      response.status(200).json({ data: userProfile });
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
 =======
       response.status(200).json({ data: userProfile });
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
@@ -116,12 +134,18 @@ export class AuthController {
         data
       );
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(result);
 =======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       response.status(200).json({
         message: "Profile updated successfully",
         data: result,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
@@ -143,12 +167,18 @@ export class AuthController {
         newPassword
       );
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(result);
 =======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       response.status(200).json({
         message: "Password changed successfully",
         data: result,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
@@ -164,12 +194,18 @@ export class AuthController {
       const { email } = forgotPasswordSchema.parse(request.body);
       const result = await this.authService.sendPasswordReset(email);
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(result);
 =======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       response.status(200).json({
         message: "Password reset email sent successfully",
         data: result,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
@@ -185,12 +221,18 @@ export class AuthController {
       const { token, newPassword } = resetPasswordSchema.parse(request.body);
       const result = await this.authService.resetPassword(token, newPassword);
 <<<<<<< HEAD
+<<<<<<< HEAD
       response.status(200).json(result);
 =======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       response.status(200).json({
         message: "Password reset successfully",
         data: result,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);

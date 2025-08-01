@@ -11,10 +11,8 @@ import { generateReferralCode } from "@/utils/generateReferralCode.js";
 import { generateToken, verifyToken } from "@/utils/jwt.js";
 
 export class AuthService {
-  constructor(
-    private emailService = new EmailService(),
-    private referralService = new ReferralService()
-  ) {}
+  private emailService = new EmailService();
+  private referralService = new ReferralService();
 
   async registerUser(data: RegisterInput) {
     if (await prisma.user.findUnique({ where: { email: data.email } })) {

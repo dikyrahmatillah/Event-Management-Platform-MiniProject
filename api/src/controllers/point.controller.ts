@@ -10,12 +10,18 @@ export class PointController {
       const validatedData = pointSchema.parse(data);
       const point = await this.pointService.createPoint(validatedData);
 <<<<<<< HEAD
+<<<<<<< HEAD
       return response.status(201).json(point);
 =======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       return response.status(201).json({
         message: "Point created successfully",
         data: point,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
 >>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
