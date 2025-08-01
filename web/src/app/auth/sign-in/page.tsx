@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn } from "next-auth/react";
 
 const signSchema = z.object({
   email: z.email("Invalid email address"),
@@ -42,7 +43,13 @@ export default function SignInPage() {
   async function onSubmit(data: z.infer<typeof signSchema>) {
     setIsLoading(true);
     try {
+      await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
     } catch (error) {
+      console.error("Authentication error", error);
     } finally {
       setIsLoading(false);
     }
