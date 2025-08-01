@@ -19,9 +19,16 @@ export class VoucherController {
         eventId,
       };
       const voucher = await this.voucherService.createVoucher(data);
+<<<<<<< HEAD
       response
         .status(201)
         .json({ message: "Voucher created successfully", voucher });
+=======
+      response.status(201).json({
+        message: "Voucher created successfully",
+        data: voucher,
+      });
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
     }

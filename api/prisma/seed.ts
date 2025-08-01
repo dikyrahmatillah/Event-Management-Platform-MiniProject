@@ -209,7 +209,6 @@ async function seed() {
       prisma.user.count(),
       prisma.coupon.count(),
       prisma.point.count(),
-      prisma.event.count(),
     ]);
 
     console.log("\n📊 Final Summary:");
