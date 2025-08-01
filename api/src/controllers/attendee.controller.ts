@@ -152,7 +152,7 @@ export class AttendeeController {
     try {
       const attendeeId = Number(request.params.attendeeId);
       await this.attendeeService.deleteAttendee(attendeeId);
-      response.status(204).send();
+      response.status(200).json({ message: "Attendee deleted successfully" });
     } catch (error) {
       next(error);
     }
@@ -166,7 +166,7 @@ export class AttendeeController {
     try {
       const eventId = Number(request.params.eventId);
       await this.attendeeService.deleteAttendeesByEventId(eventId);
-      response.status(204).send();
+      response.status(200).json({ message: "Attendees deleted successfully" });
     } catch (error) {
       next(error);
     }
@@ -180,7 +180,7 @@ export class AttendeeController {
     try {
       const userId = Number(request.params.userId);
       await this.attendeeService.deleteAttendeesByUserId(userId);
-      response.status(204).send();
+      response.status(200).json({ message: "Attendees deleted successfully" });
     } catch (error) {
       next(error);
     }
