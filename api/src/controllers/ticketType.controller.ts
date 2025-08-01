@@ -18,10 +18,20 @@ export class TicketController {
       await this.ticketTypeService.organizerIdMatches(eventId, request.user.id);
 
       const newTickets = await this.ticketTypeService.createTickets(tickets);
+<<<<<<< HEAD
+<<<<<<< HEAD
+      return response.status(201).json(newTickets);
+=======
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
       return response.status(201).json({
         message: "Tickets created successfully",
         data: newTickets,
       });
+<<<<<<< HEAD
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
+=======
+>>>>>>> 17eb489d69d6a62e957f4084671f38a02fef9139
     } catch (error) {
       next(error);
     }

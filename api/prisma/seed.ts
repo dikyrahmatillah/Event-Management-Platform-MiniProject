@@ -123,6 +123,84 @@ async function seed() {
       });
     }
 
+    const [organizer1, organizer2, organizer3] = await Promise.all([
+      prisma.user.create({
+        data: {
+          email: "organizer1@example.com",
+          password: "securepassword123",
+          firstName: "Alice",
+          lastName: "Tan",
+          role: "ORGANIZER",
+        },
+      }),
+      prisma.user.create({
+        data: {
+          email: "organizer2@example.com",
+          password: "securepassword456",
+          firstName: "Bob",
+          lastName: "Lee",
+          role: "ORGANIZER",
+        },
+      }),
+      prisma.user.create({
+        data: {
+          email: "organizer3@example.com",
+          password: "securepassword789",
+          firstName: "Charlie",
+          lastName: "Kim",
+          role: "ORGANIZER",
+        },
+      }),
+    ]);
+
+    // Create events using the organizer users
+    await prisma.event.createMany({
+      data: [
+        {
+          organizerId: organizer1.id,
+          eventName: "Marathon Jakarta 10K",
+          description: "Join the 10K run through the heart of Jakarta.",
+          category: "Sports",
+          location: "Monas, Jakarta",
+          price: 100_000,
+          startDate: new Date("2025-09-15T09:00:00Z"),
+          endDate: new Date("2025-09-17T17:00:00Z"),
+          totalSeats: 500,
+          availableSeats: 320,
+          imageUrl: "https://example.com/images/marathon.jpg",
+          status: "ACTIVE",
+        },
+        {
+          organizerId: organizer2.id,
+          eventName: "Bali Yoga Retreat",
+          description:
+            "A 3-day wellness retreat with yoga, meditation, and nature walks.",
+          category: "Wellness",
+          location: "Ubud, Bali",
+          price: 300_000,
+          startDate: new Date("2025-08-10T07:00:00Z"),
+          endDate: new Date("2025-08-13T12:00:00Z"),
+          totalSeats: 100,
+          availableSeats: 12,
+          imageUrl: "https://example.com/images/yoga-retreat.jpg",
+          status: "ACTIVE",
+        },
+        {
+          organizerId: organizer3.id,
+          eventName: "Indie Music Fest",
+          description: "Celebrate local indie artists with live performances.",
+          category: "Music",
+          location: "Lapangan D Senayan, Jakarta",
+          price: 80_000,
+          startDate: new Date("2025-10-01T14:00:00Z"),
+          endDate: new Date("2025-10-01T23:00:00Z"),
+          totalSeats: 1000,
+          availableSeats: 800,
+          imageUrl: "https://example.com/images/indie-fest.jpg",
+          status: "ACTIVE",
+        },
+      ],
+    });
     console.log("🎉 Database seeding completed successfully!");
     console.log(`📊 Total users created: ${users.length}`);
     console.log("🔑 All users have password: pass123");
