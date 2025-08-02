@@ -6,7 +6,7 @@ import {
   FaStar,
 } from "react-icons/fa6";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/atomic/badge";
 import {
   Card,
   CardAction,
@@ -14,7 +14,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/atomic/card";
 
 import { chartData } from "@/app/dashboard/data/chart-data";
 interface SectionCardsProps {

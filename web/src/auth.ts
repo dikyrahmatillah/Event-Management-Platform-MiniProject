@@ -1,9 +1,41 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import NextAuth, { User } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+    user: {
+      id: string;
+      email: string;
+      name?: string;
+    };
+  }
+
+  interface JWT {
+    accessToken?: string;
+    user?: {
+      id: string;
+      email: string;
+      name?: string;
+    };
+  }
+
+  interface User {
+    accessToken?: string;
+    userData?: {
+      user: {
+        id: string;
+        email: string;
+        name?: string;
+      };
+    };
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
-    Credentials({
+    CredentialsProvider({
+      name: "credentials",
       credentials: {
         email: {
           type: "email",
@@ -19,24 +51,84 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       authorize: async (credentials) => {
         if (!credentials) return null;
 
-        const response = await fetch(`https://localhost:8000/api/auth/login`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-        });
+        try {
+          const response = await fetch(
+            `${process.env.API_URL}/api/v1/auth/login`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
+            }
+          );
 
-        if (!response.ok) return null;
-        const userData = await response.json();
+          const userData = await response.json();
 
-        if (!userData.data || !userData.data.accessToken) return null;
+          if (!response.ok) {
+            return null;
+          }
 
-        return userData;
+          if (!userData.data || !userData.data.accessToken) {
+            console.error(
+              "Invalid response format - missing token or user data"
+            );
+            return null;
+          }
+
+          console.log("Access Token:", userData.data.accessToken);
+
+          return {
+            accessToken: userData.data.accessToken,
+          };
+        } catch (error) {
+          console.error("Error during authorization:", error);
+          return null;
+        }
       },
     }),
   ],
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        const customUser = user as User & {
+          accessToken: string;
+          userData: { user: { id: string; email: string; name?: string } };
+        };
+        token.accessToken = customUser.accessToken;
+        token.user = customUser.userData?.user;
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.accessToken = token.accessToken as string;
+        if (token.user) {
+          const user = token.user as {
+            id: string;
+            email: string;
+            name?: string;
+          };
+          session.user = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            emailVerified: null,
+          };
+        }
+      }
+
+      return session;
+    },
+  },
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: "/auth/sign-in",
+  },
 });

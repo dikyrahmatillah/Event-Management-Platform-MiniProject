@@ -5,9 +5,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+} from "@/components/ui/atomic/breadcrumb";
+import { Separator } from "@/components/ui/atomic/separator";
+import { SidebarTrigger } from "@/components/ui/atomic/sidebar";
 import { StatisticsMetrics } from "./components/statistics-metrics";
 import { UnifiedAnalytics } from "./components/unified-analytics";
 import { EventPerformanceTable } from "./components/event-performance-table";

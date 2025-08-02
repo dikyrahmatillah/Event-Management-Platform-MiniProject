@@ -18,21 +18,24 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/atomic/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/atomic/chart";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+} from "@/components/ui/atomic/select";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/atomic/toggle-group";
 import { chartData } from "@/app/dashboard/data/chart-data";
 
 export const description = "Event revenue and ticket sales analytics";

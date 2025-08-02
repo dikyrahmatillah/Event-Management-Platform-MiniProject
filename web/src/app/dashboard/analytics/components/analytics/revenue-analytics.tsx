@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/atomic/card";
 import {
   Area,
   AreaChart,
@@ -21,7 +21,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/atomic/chart";
 
 interface RevenueAnalyticsProps {
   timeRange: string;
