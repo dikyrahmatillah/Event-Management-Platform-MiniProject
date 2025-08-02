@@ -40,25 +40,29 @@ export default function SignInPage() {
   });
 
   const router = useRouter();
+  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(data: z.infer<typeof signSchema>) {
     setIsLoading(true);
+    setError("");
     try {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
-        callbackUrl: "/dashboard",
       });
+      console.log("Sign in results:", result);
 
-      console.log("Sign in result:", result);
-
-      if (result?.ok) {
-        router.push("/dashboard");
+      if (result?.error) {
+        setError("Invalid email or password");
+        setIsLoading(false);
+        return;
       }
+
+      router.push("/dashboard");
     } catch (error) {
-      console.error("Authentication error", error);
+      setError("An error occurred while logging in: " + error);
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +77,11 @@ export default function SignInPage() {
               <CardTitle className="text-center text-2xl font-bold">
                 Sign In
               </CardTitle>
+              {error && (
+                <div className="text-red-500 text-sm text-center mb-4">
+                  {error}
+                </div>
+              )}
               <CardDescription className="text-center">
                 Please enter your email and password to sign in.
               </CardDescription>
