@@ -54,5 +54,3 @@ export const changePasswordSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
-
-// Buath auth kayak gini juga kayaknya engga apa2 deh nad di ikutin yang pick sama extend asal dipahami aja dulu
