@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/atomic/card";
+import { Label } from "@/components/ui/atomic/label";
+import { Input } from "@/components/ui/atomic/input";
+import { Button } from "@/components/ui/atomic/button";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,16 +39,24 @@ export default function SignInPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(data: z.infer<typeof signSchema>) {
     setIsLoading(true);
     try {
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
+        callbackUrl: "/dashboard",
       });
+
+      console.log("Sign in result:", result);
+
+      if (result?.ok) {
+        router.push("/dashboard");
+      }
     } catch (error) {
       console.error("Authentication error", error);
     } finally {

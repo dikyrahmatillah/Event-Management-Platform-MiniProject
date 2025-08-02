@@ -5,9 +5,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+} from "@/components/ui/atomic/breadcrumb";
+import { Separator } from "@/components/ui/atomic/separator";
+import { SidebarTrigger } from "@/components/ui/atomic/sidebar";
 import { RecentTransactions } from "@/app/dashboard/components/recent-transactions";
 import { UpcomingEvents } from "@/app/dashboard/components/upcoming-events";
 import { EventReviews } from "@/app/dashboard/components/event-reviews";

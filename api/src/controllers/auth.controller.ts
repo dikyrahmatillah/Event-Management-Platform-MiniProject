@@ -60,7 +60,10 @@ export class AuthController {
     try {
       const userId = Number(request.params.id);
       const userProfile = await this.authService.getPublicProfile(userId);
-      response.status(200).json({ data: userProfile });
+      response.status(200).json({
+        message: "Public profile fetched successfully",
+        data: userProfile,
+      });
     } catch (error) {
       next(error);
     }
@@ -74,7 +77,10 @@ export class AuthController {
     try {
       const userId = request.user.id;
       const userProfile = await this.authService.getUserProfile(userId);
-      response.status(200).json({ data: userProfile });
+      response.status(200).json({
+        message: "User profile fetched successfully",
+        data: userProfile,
+      });
     } catch (error) {
       next(error);
     }
@@ -95,13 +101,10 @@ export class AuthController {
         profilePictureUrl,
       });
 
-      const result = await this.authService.updateProfile(
-        request.user.id,
-        data
-      );
+      await this.authService.updateProfile(request.user.id, data);
+
       response.status(200).json({
         message: "Profile updated successfully",
-        data: result,
       });
     } catch (error) {
       next(error);
@@ -117,15 +120,12 @@ export class AuthController {
       const { oldPassword, newPassword } = changePasswordSchema.parse(
         request.body
       );
-      const result = await this.authService.changePassword(
+      await this.authService.changePassword(
         request.user.id,
         oldPassword,
         newPassword
       );
-      response.status(200).json({
-        message: "Password changed successfully",
-        data: result,
-      });
+      response.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
       next(error);
     }
@@ -139,10 +139,7 @@ export class AuthController {
     try {
       const { email } = forgotPasswordSchema.parse(request.body);
       const result = await this.authService.sendPasswordReset(email);
-      response.status(200).json({
-        message: "Password reset email sent successfully",
-        data: result,
-      });
+      response.status(200).json({ message: "Password reset email sent" });
     } catch (error) {
       next(error);
     }
@@ -154,12 +151,10 @@ export class AuthController {
     next: NextFunction
   ) => {
     try {
-      const { token, newPassword } = resetPasswordSchema.parse(request.body);
-      const result = await this.authService.resetPassword(token, newPassword);
-      response.status(200).json({
-        message: "Password reset successfully",
-        data: result,
-      });
+      const { newPassword } = resetPasswordSchema.parse(request.body);
+      const token = request.query.token as string;
+      await this.authService.resetPassword(token, newPassword);
+      response.status(200).json({ message: "Password updated successfully" });
     } catch (error) {
       next(error);
     }

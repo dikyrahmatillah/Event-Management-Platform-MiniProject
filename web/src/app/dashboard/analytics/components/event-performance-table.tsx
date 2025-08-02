@@ -5,16 +5,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/atomic/card";
+import { Badge } from "@/components/ui/atomic/badge";
+import { Button } from "@/components/ui/atomic/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/atomic/select";
 
 const timeRanges = [
   { value: "7d", label: "Last 7 days" },

@@ -1,14 +1,19 @@
 "use client";
 
 import { useState, lazy, Suspense } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/atomic/tabs";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/atomic/card";
 import { CalendarDays, Users, Ticket, TrendingUp, Loader2 } from "lucide-react";
 import {
   Select,
@@ -16,7 +21,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/atomic/select";
 
 const RevenueAnalytics = lazy(() =>
   import("./analytics/revenue-analytics").then((module) => ({

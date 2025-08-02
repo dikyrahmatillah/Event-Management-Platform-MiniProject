@@ -7,14 +7,14 @@ import {
   FaChartLine,
 } from "react-icons/fa6";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/atomic/badge";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/components/ui/atomic/card";
 
 export function StatisticsMetrics() {
   return (

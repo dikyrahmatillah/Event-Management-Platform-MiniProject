@@ -7,8 +7,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/atomic/card";
+import { Badge } from "@/components/ui/atomic/badge";
 import {
   Line,
   LineChart,
@@ -22,7 +22,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/ui/atomic/chart";
 
 interface EventsAnalyticsProps {
   timeRange: string;

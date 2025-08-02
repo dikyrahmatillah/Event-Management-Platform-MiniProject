@@ -116,12 +116,12 @@ export class AuthService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new AppError("User not found", 404);
 
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: { id: userId },
       data,
     });
 
-    return { message: "Profile updated successfully" };
+    return updatedUser;
   }
 
   async changePassword(
@@ -141,8 +141,6 @@ export class AuthService {
       where: { id: userId },
       data: { password: hashedPassword },
     });
-
-    return { message: "Password updated successfully" };
   }
 
   async sendPasswordReset(email: string) {
@@ -152,7 +150,6 @@ export class AuthService {
     const resetToken = generateToken({ id: user.id, email: user.email }, "15m");
 
     await this.emailService.sendPasswordResetEmail(user.email, resetToken);
-    return { message: "Password reset email sent" };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -168,8 +165,6 @@ export class AuthService {
       where: { id },
       data: { password: hashedPassword },
     });
-
-    return { message: "Password updated successfully" };
   }
 
   private generateDefaultAvatar() {

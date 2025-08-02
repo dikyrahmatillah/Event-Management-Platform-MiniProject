@@ -5,8 +5,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/atomic/card";
+import { Badge } from "@/components/ui/atomic/badge";
 
 const organizerRating = {
   averageRating: 4.6,

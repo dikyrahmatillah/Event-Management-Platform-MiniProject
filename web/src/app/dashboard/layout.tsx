@@ -1,5 +1,5 @@
 import { AppSidebar } from "@/components/dashboard-components/components/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/atomic/sidebar";
 
 export default function DashboardLayout({
   children,

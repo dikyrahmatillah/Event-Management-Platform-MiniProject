@@ -9,4 +9,5 @@ export const attendeeSchema = z.object({
 });
 
 export type AttendeeInput = z.infer<typeof attendeeSchema>;
+
 export const attendeeUpdateSchema = attendeeSchema.partial();
