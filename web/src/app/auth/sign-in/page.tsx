@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 const signSchema = z.object({
   email: z.email("Invalid email address"),
@@ -52,17 +53,18 @@ export default function SignInPage() {
         password: data.password,
         redirect: false,
       });
-      console.log("Sign in results:", result);
 
       if (result?.error) {
-        setError("Invalid email or password");
+        toast.error("Invalid email or password");
         setIsLoading(false);
         return;
       }
 
+      toast.success("Login successful");
+
       router.push("/dashboard");
     } catch (error) {
-      setError("An error occurred while logging in: " + error);
+      toast.error("An error occurred while logging in: " + error);
     } finally {
       setIsLoading(false);
     }
@@ -125,7 +127,7 @@ export default function SignInPage() {
                 <span className="text-gray-700">
                   Don&apos;t have an account?{" "}
                 </span>
-                <Link href="/auth/sign-up" className="hover:text-blue-500 ">
+                <Link href="/auth/register" className="hover:text-blue-500 ">
                   Sign Up
                 </Link>
               </div>
