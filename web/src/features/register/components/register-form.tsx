@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/atomic/button";
 import { useForm } from "react-hook-form";
 import { registerSchema, RegisterSchema } from "../schema/registerSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function RegisterForm() {
+export function RegisterForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -18,6 +22,7 @@ export default function RegisterForm() {
   });
 
   async function onSubmit(formData: RegisterSchema) {
+    setIsSubmitting(true);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`,
@@ -31,14 +36,20 @@ export default function RegisterForm() {
       );
       const data = await response.json();
       if (!response.ok) {
-        console.error("Registration failed:", data.message);
+        toast.error(data.message);
         return;
       }
 
-      console.log("Registration successfuly");
+      toast.success("Registration successful");
       reset();
-    } catch (error) {
-      console.error("Registration failed:", error);
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred during registration"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -78,11 +89,13 @@ export default function RegisterForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="referralCode">Referral Code (optional)</Label>
-        <Input type="text" id="referralCode" {...register("referredByCode")} />
-        {errors.referredByCode && <p>{errors.referredByCode.message}</p>}
       </div>
-      <Button className="w-full cursor-pointer" type="submit">
-        Register
+      <Button
+        className="w-full cursor-pointer"
+        type="submit"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? "Registering..." : "Register"}
       </Button>
     </form>
   );
