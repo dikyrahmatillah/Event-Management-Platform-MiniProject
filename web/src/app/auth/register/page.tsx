@@ -1,9 +1,5 @@
-import { RegisterPage } from "@/features/register/pages/register.page";
+import { notFound } from "next/navigation";
 
-export default function Page() {
-  return (
-    <main>
-      <RegisterPage />
-    </main>
-  );
+export default function RegisterPage() {
+  notFound();
 }

@@ -5,26 +5,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/atomic/card";
-import { RegisterForm } from "../components/register-form";
+import RegisterForm from "@/features/register/components/register-form";
 
-export function RegisterPage() {
+type RegisterPageProps = {
+  role: "CUSTOMER" | "ORGANIZER";
+  title: string;
+  description: string;
+};
+
+export function RegisterPage({ role, title, description }: RegisterPageProps) {
   return (
-    <div className="min-h-screen grid place-items-center mx-6">
-      <div className="max-w-md w-full">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold">
-              Register
-            </CardTitle>
-            <CardDescription className="text-center">
-              Create a new account.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <RegisterForm />
-          </CardContent>
-        </Card>
+    <main>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-md w-full">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-center text-2xl font-bold">
+                {title}
+              </CardTitle>
+              <CardDescription className="text-center">
+                {description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RegisterForm role={role} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }
