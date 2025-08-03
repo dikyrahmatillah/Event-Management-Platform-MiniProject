@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { searchSchema, type SearchFormData } from "@/utils/search-validation";
-import { useDebounce } from "@/hooks/search-debounce";
+import { searchSchema, type SearchFormData } from "@/components/ui/organism/search-bar/schema/search-validation";
+import { useDebounce } from "@/components/ui/organism/search-bar/hooks/search-debounce";
 
 import { Button } from "@/components/ui/atomic/button";
 import { HiMapPin, HiMiniChevronDown } from "react-icons/hi2";
