@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Manrope } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/atomic/sonner";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -28,7 +29,9 @@ export default function RootLayout({
         className={`${montserrat.variable} ${manrope.variable} antialiased`}
       ><main>
         {children}
+
         </main>
+        <Toaster />
       </body>
     </html>
   );

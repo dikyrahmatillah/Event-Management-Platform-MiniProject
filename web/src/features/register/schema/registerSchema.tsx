@@ -12,7 +12,7 @@ export const registerSchema = z
       .regex(/[\W_]/, "Password must contain at least one special character"),
     firstName: z
       .string()
-      .min(1, "First name is required")
+      .min(3, "First name must be at least 3 characters long")
       .max(100, "First name cannot exceed 100 characters"),
     lastName: z
       .string()
