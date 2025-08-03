@@ -1,4 +1,4 @@
-import SearchBar from "@/components/ui/organism/search-bar";
+import SearchBar from "@/components/ui/organism/search-bar/search-bar";
 export default function Hero() {
   return (
     <div className="flex flex-col justify-between py-4 md:py-20 lg:py-24 w-full min-h-screen bg-fuchsia-950">
