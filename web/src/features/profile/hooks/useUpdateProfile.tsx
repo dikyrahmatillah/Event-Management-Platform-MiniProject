@@ -12,7 +12,6 @@ export function useUpdateProfile() {
     selectedImage: File | null,
     onSuccess?: () => void
   ) => {
-    setIsSubmitting(true);
     try {
       const token = session?.user?.accessToken;
 

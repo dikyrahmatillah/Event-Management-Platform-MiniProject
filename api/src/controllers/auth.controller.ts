@@ -92,13 +92,13 @@ export class AuthController {
     next: NextFunction
   ) => {
     try {
-      const profilePictureUrl = request.file
+      const profilePicture = request.file
         ? await this.fileService.uploadPicture(request.file.path)
         : undefined;
 
       const data = updateProfileSchema.parse({
         ...request.body,
-        profilePictureUrl,
+        profilePicture,
       });
 
       await this.authService.updateProfile(request.user.id, data);
