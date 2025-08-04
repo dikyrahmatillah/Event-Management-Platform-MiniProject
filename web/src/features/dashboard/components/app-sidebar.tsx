@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/atomic/sidebar";
+import Image from "next/image";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   userRole?: string;
@@ -122,10 +123,19 @@ export function AppSidebar({ userRole, ...props }: AppSidebarProps) {
   const navMain = getNavigationForRole();
   return (
     <Sidebar {...props}>
-      <SidebarHeader>
-        <SearchForm />
-      </SidebarHeader>
       <SidebarContent>
+        <SidebarHeader>
+          <div className="mb-4 flex justify-center">
+            <Image
+              src="/assets/logo.svg"
+              alt="Logo"
+              height={32}
+              width={128}
+              className="h-8"
+            />
+          </div>
+          <SearchForm />
+        </SidebarHeader>
         {navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>
