@@ -17,6 +17,7 @@ export class ReferralService {
           userId: referredUserId,
           pointsEarned: 10000,
           balance: 10000,
+          description: `Referral bonus from ${referralCode}`,
           expiresAt: threeMonthsFromNow,
         },
       });

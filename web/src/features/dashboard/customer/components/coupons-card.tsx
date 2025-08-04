@@ -9,10 +9,8 @@ import {
 } from "@/components/ui/atomic/card";
 import { Badge } from "@/components/ui/atomic/badge";
 import { Button } from "@/components/ui/atomic/button";
-import { useState } from "react";
 
-export function CustomerCouponsCard() {
-  // This would typically fetch coupons data from your API
+export function CouponsCard() {
   const coupons = [
     {
       id: 1,
