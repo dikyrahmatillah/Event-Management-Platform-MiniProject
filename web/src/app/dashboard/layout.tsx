@@ -1,23 +1,23 @@
 import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/atomic/sidebar";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import SessionProviderWrapper from "./session-provider";
+import AuthGuard from "./AuthGuard";
 
-export default async function DashboardLayout({
+export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/auth/sign-in");
-  }
-
   return (
     <SidebarProvider>
-      <AppSidebar userRole={session.user.role} />
-      <SidebarInset className="flex flex-1 flex-col">{children}</SidebarInset>
+      <AppSidebar />
+      <SessionProviderWrapper>
+        <AuthGuard>
+          <SidebarInset className="flex flex-1 flex-col">
+            {children}
+          </SidebarInset>
+        </AuthGuard>
+      </SessionProviderWrapper>
     </SidebarProvider>
   );
 }
