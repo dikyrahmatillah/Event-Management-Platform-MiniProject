@@ -69,7 +69,8 @@ export default function ChangePasswordPage() {
       }
 
       toast.success("Password changed successfully");
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("An error occurred while changing the password.");
     } finally {
       setIsLoading(false);

@@ -11,4 +11,4 @@ export const changePasswordSchema = z.object({
     .regex(/[\W_]/, "At least one special character"),
 });
 
-export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

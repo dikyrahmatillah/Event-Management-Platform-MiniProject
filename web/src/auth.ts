@@ -52,7 +52,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!token) return null;
 
           return { accessToken: token };
-        } catch {
+        } catch (error) {
+          console.error(error);
           return null;
         }
       },
@@ -95,3 +96,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: { signIn: "/auth/sign-in" },
 });
+
+/* ----------------------- Semangat nad ᕙ( •̀ ᗜ •́ )ᕗ ----------------------- */

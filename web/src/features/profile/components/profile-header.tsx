@@ -1,7 +1,7 @@
-import type { ProfileHeaderProps } from "@/features/profile/schema/profile.interface";
 import { Badge } from "@/components/ui/atomic/badge";
+import { ProfileFormInput } from "../schema/profile.schema";
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+export const ProfileHeader: React.FC<Partial<ProfileFormInput>> = ({
   firstName,
   lastName,
   role,

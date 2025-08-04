@@ -1,25 +1,28 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { ProfileData } from "./useProfile";
+import { ProfileFormInput } from "../schema/profile.schema";
 
 export function useUpdateProfile() {
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onSubmit = async (
-    formData: Partial<ProfileData>,
+    formData: Partial<ProfileFormInput>,
     selectedImage: File | null,
     onSuccess?: () => void
   ) => {
     setIsSubmitting(true);
     try {
       const token = session?.user?.accessToken;
+
       if (!token) throw new Error("Authentication token not found");
+
       const submitData = new FormData();
       if (formData.firstName)
         submitData.append("firstName", formData.firstName);
       if (formData.lastName) submitData.append("lastName", formData.lastName);
+      if (formData.email) submitData.append("email", formData.email);
       if (formData.phone) submitData.append("phone", formData.phone);
       if (selectedImage) submitData.append("profilePicture", selectedImage);
 
@@ -31,11 +34,14 @@ export function useUpdateProfile() {
           body: submitData,
         }
       );
+
       if (!res.ok)
         throw new Error(
           (await res.json()).message || "Failed to update profile"
         );
+
       toast.success("Profile updated successfully");
+
       if (onSuccess) onSuccess();
     } catch (error) {
       toast.error(

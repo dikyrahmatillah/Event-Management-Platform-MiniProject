@@ -1,13 +1,16 @@
-import * as z from "zod";
+import { z } from "zod";
 
 export const profileFormSchema = z.object({
   firstName: z.string().min(1).max(100),
   lastName: z.string().max(100).optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   phone: z
     .string()
     .regex(/^(?:\+62|62|0)8[1-9][0-9]{6,10}$/)
     .optional(),
+  profilePicture: z.string().url().optional(),
+  role: z.enum(["ORGANIZER", "CUSTOMER"]).optional(),
+  referralCode: z.string().max(20).optional(),
 });
 
-export type ProfileFormValues = z.infer<typeof profileFormSchema>;
+export type ProfileFormInput = z.infer<typeof profileFormSchema>;
