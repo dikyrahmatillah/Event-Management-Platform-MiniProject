@@ -9,7 +9,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function RegisterForm() {
+type RegisterFormProps = {
+  role: "CUSTOMER" | "ORGANIZER";
+};
+
+export default function RegisterForm({ role }: RegisterFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -24,13 +28,23 @@ export function RegisterForm() {
   async function onSubmit(formData: RegisterSchema) {
     setIsSubmitting(true);
     try {
+      if (role === "ORGANIZER") {
+        formData.role = "ORGANIZER";
+      }
+      if (formData.phone === "") {
+        delete formData.phone;
+      }
+      if (formData.profilePicture === "") {
+        delete formData.profilePicture;
+      }
+      if (role === "CUSTOMER" && formData.referredByCode === "") {
+        delete formData.referredByCode;
+      }
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/register`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         }
       );
@@ -83,13 +97,21 @@ export function RegisterForm() {
         {errors.phone && <p>{errors.phone.message}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="profilePicture">Profile Picture</Label>
+        <Label htmlFor="profilePicture">Profile Picture (optional)</Label>
         <Input type="url" id="profilePicture" {...register("profilePicture")} />
         {errors.profilePicture && <p>{errors.profilePicture.message}</p>}
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="referralCode">Referral Code (optional)</Label>
-      </div>
+      {role === "CUSTOMER" && (
+        <div className="space-y-2">
+          <Label htmlFor="referralCode">Referral Code (optional)</Label>
+          <Input
+            type="text"
+            id="referralCode"
+            {...register("referredByCode")}
+          />
+          {errors.referredByCode && <p>{errors.referredByCode.message}</p>}
+        </div>
+      )}
       <Button
         className="w-full cursor-pointer"
         type="submit"

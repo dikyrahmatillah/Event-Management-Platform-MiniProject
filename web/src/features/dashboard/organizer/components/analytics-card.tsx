@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChartAreaInteractive } from "./chart-area-interactive";
-import { SectionCards } from "./sections-card";
+import { ChartAreaInteractive } from "../../components/chart-area-interactive";
+import { SectionCards } from "../../components/sections-card";
 
-export function DashboardAnalytics() {
+export function AnalyticsCard() {
   const [timeRange, setTimeRange] = useState("last-7-days");
 
   return (
