@@ -4,7 +4,6 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 
 import { SearchForm } from "@/features/dashboard/components/search-form";
-import { VersionSwitcher } from "@/features/dashboard/components/version-switcher";
 import {
   Sidebar,
   SidebarContent,
