@@ -6,11 +6,6 @@ import { Router } from "express";
 const router = Router();
 
 router.post("/", verifyToken, verifyOrganizer, ticketController.createTickets);
-router.get(
-  "/:eventId",
-  verifyToken,
-  verifyOrganizer,
-  ticketController.getTicketsByEventId
-);
+router.get("/:eventId", ticketController.getTicketsByEventId);
 
 export default router;

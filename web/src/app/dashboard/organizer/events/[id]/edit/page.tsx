@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import {
   EventFormSchema,
@@ -30,29 +30,15 @@ import {
 import { Calendar } from "@/components/ui/atomic/calendar";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/atomic/separator";
-import IDRCurrencyInput from "@/app/dashboard/events/idr";
-
-// Dummy fetch function, replace with real API call
-async function fetchEventById(id: string) {
-  // TODO: Replace with real API call
-  // Example response structure:
-  return {
-    eventBanner: null, // or image url
-    eventName: "Sample Event",
-    eventDescription: "This is a sample event description.",
-    startDate: new Date(),
-    endDate: new Date(),
-    ticketTypes: [
-      { type: "Pre Sale", price: 50000, availableSeat: 100 },
-      { type: "Regular", price: 100000, availableSeat: 200 },
-    ],
-  };
-}
+import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
+import EventService from "@/lib/api/event-service";
+import { toast } from "sonner";
 
 export default function EditEventPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const eventId = params.get("id");
+  const params = useParams();
+  const eventId = params.id as string;
+  const eventService = new EventService();
 
   const ticketTypeOptions = [
     { id: "Pre Sale", label: "Pre Sale" },
@@ -70,38 +56,102 @@ export default function EditEventPage() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!eventId) return;
-    setLoading(true);
-    fetchEventById(eventId).then((data) => {
-      // If eventBanner is a URL, set preview
-      if (data.eventBanner && typeof data.eventBanner === "string") {
-        setImagePreview(data.eventBanner);
+    
+    const fetchEventData = async () => {
+      try {
+        setLoading(true);
+        const eventData = await eventService.getEventById(Number(eventId));
+        
+        // If event has image, set preview
+        if (eventData.imageUrl) {
+          setImagePreview(eventData.imageUrl);
+        }
+        
+        // Fetch ticket types separately since they might not be included in the event data
+        let ticketTypesData = [];
+        try {
+          const response = await fetch(`/api/ticket-types?eventId=${eventId}`);
+          if (response.ok) {
+            ticketTypesData = await response.json();
+          }
+        } catch (ticketErr) {
+          console.warn("Could not fetch ticket types:", ticketErr);
+          // Continue with empty ticket types
+        }
+        
+        // Map the API data structure to our form structure
+        form.reset({
+          eventName: eventData.eventName || '',
+          eventDescription: eventData.description || '',
+          eventBanner: undefined, // Ensure eventBanner is undefined, not null or string
+          startDate: eventData.startDate ? new Date(eventData.startDate) : undefined,
+          endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
+          ticketTypes: ticketTypesData.map((t: {
+            typeName?: string;
+            type?: string;
+            price: string | number;
+            availableQuantity?: number;
+            quantity?: number;
+          }) => ({
+            type: mapTicketType(t.typeName || t.type || ''),
+            price: typeof t.price === 'string' ? parseInt(t.price) || 0 : t.price || 0,
+            availableSeat: t.availableQuantity || t.quantity || 0,
+          })),
+        });
+      } catch (err) {
+        console.error("Failed to fetch event data:", err);
+        toast.error("Failed to load event data. Please try again.");
+      } finally {
+        setLoading(false);
       }
-      form.reset({
-        ...data,
-        eventBanner: undefined, // Ensure eventBanner is undefined, not null or string
-        startDate: data.startDate ? new Date(data.startDate) : undefined,
-        endDate: data.endDate ? new Date(data.endDate) : undefined,
-        ticketTypes: (data.ticketTypes || []).map((t) => ({
-          ...t,
-          type: t.type as "Pre Sale" | "Regular" | "VIP",
-        })),
-      });
-      setLoading(false);
-    });
+    };
+    
+    fetchEventData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
-  const onSubmit = (data: EventFormSchema) => {
-    setIsSubmitting(true);
-    // TODO: Replace with real API update call
-    setTimeout(() => {
-      console.log("Update event:", data);
+  // Helper function to map ticket types from API to form options
+  const mapTicketType = (type: string): "Pre Sale" | "Regular" | "VIP" => {
+    if (type?.toLowerCase().includes("pre") || type?.toLowerCase().includes("early")) {
+      return "Pre Sale";
+    } else if (type?.toLowerCase().includes("vip")) {
+      return "VIP";
+    } else {
+      return "Regular";
+    }
+  };
+
+  const onSubmit = async (data: EventFormSchema) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Convert form data to API structure
+      const updateData = {
+        eventName: data.eventName,
+        description: data.eventDescription,
+        startDate: data.startDate?.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        // Add other fields as needed based on your API
+      };
+      
+      // Update event
+      await eventService.updateEvent(Number(eventId), updateData);
+      
+      // Show success message
+      toast.success("Event updated successfully");
+      
+      // Navigate back to events list
+      router.push("/dashboard/organizer/events");
+    } catch (err) {
+      console.error("Failed to update event:", err);
+      toast.error("Failed to update event. Please try again.");
+    } finally {
       setIsSubmitting(false);
-      router.push("/organizer/events");
-    }, 1500);
+    }
   };
 
   if (loading) {

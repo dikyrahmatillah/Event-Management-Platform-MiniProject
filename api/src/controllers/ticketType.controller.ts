@@ -34,8 +34,6 @@ export class TicketController {
   ) => {
     try {
       const eventId = Number(request.params.eventId);
-      await this.ticketTypeService.organizerIdMatches(eventId, request.user.id);
-
       const tickets = await this.ticketTypeService.getTicketsByEventId(eventId);
       return response.status(200).json({
         message: "Tickets retrieved successfully",

@@ -1,5 +1,3 @@
-// lib/api/eventService.ts
-
 import { EventTypes } from "@/types/event.types";
 
 const API_BASE_URL =
@@ -41,7 +39,8 @@ class EventService {
 
   async getEventById(id: number): Promise<EventTypes> {
     const url = `${API_BASE_URL}/api/v1/events/details/${id}`;
-    return this.fetchWithErrorHandling(url);
+    const res = await this.fetchWithErrorHandling(url);
+    return res.data;
   }
 
   async getAllEvents(

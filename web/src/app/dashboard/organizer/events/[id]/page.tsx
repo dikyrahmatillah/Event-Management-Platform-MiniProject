@@ -27,19 +27,8 @@ import Link from "next/link";
 import { format } from "date-fns";
 import EventService from "@/lib/api/event-service";
 import { EventTypes } from "@/types/event.types";
-
-type TicketType = {
-  id: number;
-  typeName: string;
-  description?: string;
-  price: string;
-  quantity: number;
-  availableQuantity: number;
-};
-
-type EventWithTickets = EventTypes & {
-  ticketTypes?: TicketType[];
-};
+import { ticketService } from "@/lib/api/ticket-service";
+import { TicketTypes } from "@/types/ticket.types";
 
 // Helper function to check valid date
 function isValidDate(date: unknown) {
@@ -54,7 +43,7 @@ export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
   const [event, setEvent] = useState<EventTypes | null>(null);
-  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
+  const [ticketTypes, setTicketTypes] = useState<TicketTypes[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,16 +53,11 @@ export default function EventDetailPage() {
         setLoading(true);
         const data = await eventService.getEventById(Number(params.id));
         setEvent(data);
-        const eventWithTickets = data as EventWithTickets;
-        if (eventWithTickets && Array.isArray(eventWithTickets.ticketTypes)) {
-          setTicketTypes(eventWithTickets.ticketTypes);
-        } else {
-          const res = await fetch(`/api/ticket-types?eventId=${params.id}`);
-          if (res.ok) {
-            const ticketData = await res.json();
-            setTicketTypes(ticketData);
-          }
-        }
+
+        const ticketData = await ticketService.getTicketsByEventId(
+          Number(params.id)
+        );
+        setTicketTypes(ticketData);
       } catch (error) {
         console.error("Failed to fetch event details:", error);
         setError("Failed to fetch event details.");
