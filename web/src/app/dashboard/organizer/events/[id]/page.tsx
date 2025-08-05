@@ -301,7 +301,7 @@ export default function EventDetailPage() {
 
                         <div className="flex flex-col items-end gap-1">
                           <Badge variant="secondary" className="font-semibold">
-                            IDR {parseInt(ticket.price).toLocaleString()}
+                            IDR {Number(ticket.price).toLocaleString()}
                           </Badge>
                           <div className="text-xs text-muted-foreground">
                             {ticket.availableQuantity} of {ticket.quantity}{" "}
@@ -342,9 +342,17 @@ export default function EventDetailPage() {
 
               <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
                 <Link
-                  href={`/dashboard/organizer/events/${event.id}/attendees`}
+                  href={`/dashboard/organizer/events/${event.id}/ticket-types`}
                 >
                   <Button variant="default" className="flex items-center gap-2">
+                    <TicketIcon className="h-4 w-4" />
+                    Manage Tickets
+                  </Button>
+                </Link>
+                <Link
+                  href={`/dashboard/organizer/events/${event.id}/attendees`}
+                >
+                  <Button variant="outline" className="flex items-center gap-2">
                     <UsersIcon className="h-4 w-4" />
                     View Attendees
                   </Button>
