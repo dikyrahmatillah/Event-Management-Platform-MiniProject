@@ -188,13 +188,10 @@ export class EventController {
   ) => {
     try {
       const organizerId = request.user.id;
-      const page = parseInt(request.query.page as string) || 1;
-      const limit = parseInt(request.query.limit as string) || 10;
+      // const page = parseInt(request.query.page as string) || 1;
+      // const limit = parseInt(request.query.limit as string) || 10;
 
-      const events = await this.eventService.getEventsByOrganizer(organizerId, {
-        page,
-        limit,
-      });
+      const events = await this.eventService.getEventById(organizerId);
 
       response.status(200).json({
         success: true,
