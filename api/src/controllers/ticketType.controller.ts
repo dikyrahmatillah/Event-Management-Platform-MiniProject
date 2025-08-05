@@ -1,5 +1,5 @@
-import { TicketTypeService } from "@/services/ticketType.service.js";
 import { NextFunction, Request, Response } from "express";
+import { TicketTypeService } from "@/services/ticketType.service.js";
 
 export class TicketController {
   private ticketTypeService = new TicketTypeService();

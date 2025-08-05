@@ -80,10 +80,3 @@ class AttendeeService {
 
 // Export an instance for direct usage
 export const attendeeService = new AttendeeService();
-
-// Keep the original function for backward compatibility
-export async function fetchAttendeesByEventId(
-  eventId: number
-): Promise<AttendeeListResponse> {
-  return attendeeService.getAttendeesByEventId(eventId);
-}
