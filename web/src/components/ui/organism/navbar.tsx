@@ -36,9 +36,11 @@ export default function Navbar() {
               Sign In
             </Button>
           </Link>
-          <Button variant={"default"} className="font-sans">
-            Sign Up
-          </Button>
+          <Link href="/auth/sign-up">
+            <Button variant={"default"} className="font-sans">
+              Sign Up
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
