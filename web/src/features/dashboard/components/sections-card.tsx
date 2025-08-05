@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/atomic/card";
 
-import { chartData } from "@/app/dashboard/data/chart-data";
+import { chartData } from "@/app/dashboard/organizer/data/chart-data";
 interface SectionCardsProps {
   timeRange: string;
 }

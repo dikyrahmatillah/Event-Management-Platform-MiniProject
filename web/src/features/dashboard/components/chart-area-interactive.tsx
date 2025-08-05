@@ -36,7 +36,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/atomic/toggle-group";
-import { chartData } from "@/app/dashboard/data/chart-data";
+import { chartData } from "@/app/dashboard/organizer/data/chart-data";
 
 export const description = "Event revenue and ticket sales analytics";
 

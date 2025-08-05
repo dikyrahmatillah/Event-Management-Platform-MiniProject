@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/atomic/input";
 import { Label } from "@/components/ui/atomic/label";
 import { zodResolver } from "@hookform/resolvers/zod/dist/zod.js";
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -104,11 +105,15 @@ export default function ChangePasswordPage() {
                     />
                     <button
                       type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-xs"
-                      onClick={() => setShowNewPassword((v) => !v)}
                       tabIndex={-1}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center px-1 text-muted-foreground cursor-pointer"
+                      onClick={() => setShowNewPassword((v) => !v)}
                     >
-                      {showNewPassword ? "Hide" : "Show"}
+                      {showNewPassword ? (
+                        <EyeOff size={18} />
+                      ) : (
+                        <Eye size={18} />
+                      )}
                     </button>
                   </div>
                   {errors.newPassword && (
