@@ -1,8 +1,7 @@
 import { AttendeeListResponse, Attendee } from "@/types/attendee.types";
 
 class AttendeeService {
-  private baseUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   /**
    * Fetch attendees for a specific event
@@ -35,7 +34,8 @@ class AttendeeService {
       }
 
       const json = await res.json();
-      return json.data;
+      console.log("Fetched attendees:", json.data);
+      return json.data || [];
     } catch (error) {
       console.error("Error fetching attendees:", error);
       throw error;

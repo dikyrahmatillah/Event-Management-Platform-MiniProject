@@ -40,6 +40,31 @@ export class AttendeeService {
         eventId,
         ...(status && { status }),
       },
+      include: {
+        User: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        Transaction: {
+          include: {
+            TransactionDetails: {
+              include: {
+                TicketType: true,
+              },
+            },
+          },
+        },
+        Event: {
+          select: {
+            id: true,
+            eventName: true,
+          },
+        },
+      },
       skip,
       take,
     });

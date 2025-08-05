@@ -7,6 +7,9 @@ export type Attendee = {
   ticketQuantity: number;
   totalPrice: number;
   eventName: string;
+  status?: "REGISTERED" | "ATTENDED" | "NO_SHOW";
+  attendedAt?: string | null;
+  createdAt?: string;
 };
 
 export type AttendeeListResponse = Attendee[];
