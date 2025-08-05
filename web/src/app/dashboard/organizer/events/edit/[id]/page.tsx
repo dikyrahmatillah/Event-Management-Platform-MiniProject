@@ -100,7 +100,7 @@ export default function EditEventPage() {
     setTimeout(() => {
       console.log("Update event:", data);
       setIsSubmitting(false);
-      router.push("/dashboard/events");
+      router.push("/organizer/events");
     }, 1500);
   };
 
@@ -119,7 +119,7 @@ export default function EditEventPage() {
         </div>
         <Button
           variant="outline"
-          onClick={() => router.push("/dashboard/events")}
+          onClick={() => router.push("/organizer/events")}
         >
           Cancel
         </Button>

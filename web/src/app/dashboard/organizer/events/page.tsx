@@ -105,7 +105,7 @@ export default function EventsManagementPage() {
             Create, edit and manage your events
           </p>
         </div>
-        <Link href="/dashboard/events/create">
+        <Link href="/dashboard/organizer/events/create">
           <Button className="flex items-center gap-2">
             <PlusCircle className="h-4 w-4" />
             Create Event
@@ -245,7 +245,7 @@ function EventsTable({
     return (
       <div className="flex flex-col justify-center items-center h-40 border border-dashed rounded-md">
         <p className="text-muted-foreground mb-4">No events found</p>
-        <Link href="/dashboard/events/create">
+        <Link href="/dashboard/organizer/events/create">
           <Button variant="outline">Create your first event</Button>
         </Link>
       </div>
@@ -344,12 +344,12 @@ function EventsTable({
               </td>
               <td className="py-3 px-4">
                 <div className="flex gap-2">
-                  <Link href={`/dashboard/events/${event.id}`}>
+                  <Link href={`/dashboard/organizer/events/${event.id}`}>
                     <Button size="sm" variant="outline">
                       View
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/events/${event.id}/edit`}>
+                  <Link href={`/dashboard/organizer/events/${event.id}/edit`}>
                     <Button size="sm" variant="outline">
                       Edit
                     </Button>
