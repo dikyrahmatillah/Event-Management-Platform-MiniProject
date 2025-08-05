@@ -377,20 +377,22 @@ export default function TicketTypesPage() {
                   {ticketTypes.map((ticket) => (
                     <div key={ticket.id} className="border rounded-lg p-4">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-                        <div>
-                          <div className="font-medium">{ticket.typeName}</div>
+                        <div className="flex-1">
+                          <div className="font-medium flex items-center gap-3">
+                            {ticket.typeName}
+                            <Badge
+                              variant="secondary"
+                              className="font-semibold text-base px-3 py-1"
+                            >
+                              IDR {Number(ticket.price).toLocaleString()}
+                            </Badge>
+                          </div>
                           {ticket.description && (
                             <p className="text-xs text-muted-foreground mt-1">
                               {ticket.description}
                             </p>
                           )}
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge variant="secondary" className="font-semibold">
-                            IDR {Number(ticket.price).toLocaleString()}
-                          </Badge>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-muted-foreground mt-2">
                             {ticket.availableQuantity} of {ticket.quantity}{" "}
                             available
                           </div>
