@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/atomic/button";
 import { Badge } from "@/components/ui/atomic/badge";
@@ -42,6 +43,7 @@ const eventService = new EventService();
 export default function EventDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { data: session } = useSession();
   const [event, setEvent] = useState<EventTypes | null>(null);
   const [ticketTypes, setTicketTypes] = useState<TicketTypes[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,13 +53,25 @@ export default function EventDetailPage() {
     const fetchEventAndTickets = async () => {
       try {
         setLoading(true);
+        setError(null);
+
+        // Fetch event details first
         const data = await eventService.getEventById(Number(params.id));
         setEvent(data);
 
-        const ticketData = await ticketService.getTicketsByEventId(
-          Number(params.id)
-        );
-        setTicketTypes(ticketData);
+        // Fetch tickets separately - if this fails, we still show the event
+        try {
+          const token = session?.user?.accessToken;
+          const ticketData = await ticketService.getTicketsByEventId(
+            Number(params.id),
+            token
+          );
+          setTicketTypes(ticketData);
+        } catch (ticketError) {
+          console.warn("Failed to fetch tickets:", ticketError);
+          // Set empty array for tickets but don't fail the whole page
+          setTicketTypes([]);
+        }
       } catch (error) {
         console.error("Failed to fetch event details:", error);
         setError("Failed to fetch event details.");
@@ -66,7 +80,7 @@ export default function EventDetailPage() {
       }
     };
     if (params.id) fetchEventAndTickets();
-  }, [params.id]);
+  }, [params.id, session?.user?.accessToken]);
 
   if (loading) {
     const breadcrumbs = [
@@ -169,93 +183,95 @@ export default function EventDetailPage() {
       breadcrumbs={breadcrumbs}
     >
       <div className="px-4 lg:px-6 max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-4">
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeftIcon className="h-4 w-4" /> Back
+          </Button>
+        </div>
         {/* Main Content Card */}
         <Card className="shadow-sm">
           {/* Event Header */}
           <CardHeader className="border-b bg-muted/30">
-            <div className="flex flex-col md:flex-row md:items-center gap-6">
-              <div className="flex-shrink-0">
-                {event.imageUrl ? (
-                  <Image
-                    src={event.imageUrl}
-                    alt={event.eventName || "Event image"}
-                    width={140}
-                    height={140}
-                    className="rounded-lg object-cover border shadow-sm"
-                  />
-                ) : (
-                  <div className="w-[140px] h-[140px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
-                    <CalendarIcon className="h-16 w-16 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  <Badge
-                    variant={
-                      event.status === "ACTIVE" ? "default" : "secondary"
-                    }
-                    className={
-                      event.status === "ACTIVE"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : event.status === "INACTIVE"
-                        ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                        : "bg-red-100 text-red-800 hover:bg-red-200"
-                    }
-                  >
-                    {event.status || "Unknown"}
-                  </Badge>
-                  {event.category && (
-                    <Badge variant="outline" className="text-xs">
-                      {event.category}
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row md:items-center gap-6">
+                <div className="flex-shrink-0">
+                  {event.imageUrl ? (
+                    <Image
+                      src={event.imageUrl}
+                      alt={event.eventName || "Event image"}
+                      width={140}
+                      height={140}
+                      className="rounded-lg object-cover border shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-[140px] h-[140px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
+                      <CalendarIcon className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant={
+                        event.status === "ACTIVE" ? "default" : "secondary"
+                      }
+                      className={
+                        event.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : event.status === "INACTIVE"
+                          ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                          : "bg-red-100 text-red-800 hover:bg-red-200"
+                      }
+                    >
+                      {event.status || "Unknown"}
                     </Badge>
-                  )}
-                </div>
-                <CardTitle className="text-2xl md:text-3xl font-bold">
-                  {event.eventName || (
-                    <span className="italic text-muted-foreground">
-                      No name
-                    </span>
-                  )}
-                </CardTitle>
+                    {event.category && (
+                      <Badge variant="outline" className="text-xs">
+                        {event.category}
+                      </Badge>
+                    )}
+                  </div>
+                  <CardTitle className="text-2xl md:text-3xl font-bold">
+                    {event.eventName || (
+                      <span className="italic text-muted-foreground">
+                        No name
+                      </span>
+                    )}
+                  </CardTitle>
 
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4" />
-                    {isValidDate(event.startDate) ? (
-                      format(new Date(event.startDate as string), "PPP 'at' p")
-                    ) : (
-                      <span className="italic">Not specified</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4" />
-                    {event.location || (
-                      <span className="italic">No location</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <UsersIcon className="h-4 w-4" />
-                    {typeof event.availableSeats === "number" &&
-                    typeof event.totalSeats === "number" ? (
-                      `${event.availableSeats} / ${event.totalSeats} seats`
-                    ) : (
-                      <span className="italic">No seats info</span>
-                    )}
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <CalendarIcon className="h-4 w-4" />
+                      {isValidDate(event.startDate) ? (
+                        format(
+                          new Date(event.startDate as string),
+                          "PPP 'at' p"
+                        )
+                      ) : (
+                        <span className="italic">Not specified</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-4 w-4" />
+                      {event.location || (
+                        <span className="italic">No location</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <UsersIcon className="h-4 w-4" />
+                      {typeof event.availableSeats === "number" &&
+                      typeof event.totalSeats === "number" ? (
+                        `${event.availableSeats} / ${event.totalSeats} seats`
+                      ) : (
+                        <span className="italic">No seats info</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex gap-2 md:self-start mt-2 md:mt-0">
-                <Link href={`/event-detail/${event.id}`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-1"
-                  >
-                    <EyeIcon className="h-3 w-3" /> Preview
-                  </Button>
-                </Link>
               </div>
             </div>
           </CardHeader>
@@ -363,14 +379,6 @@ export default function EventDetailPage() {
                     Edit Event
                   </Button>
                 </Link>
-                <Button
-                  variant="ghost"
-                  onClick={() => router.back()}
-                  className="flex items-center gap-2"
-                >
-                  <ArrowLeftIcon className="h-4 w-4" />
-                  Back
-                </Button>
               </div>
             </div>
           </CardContent>

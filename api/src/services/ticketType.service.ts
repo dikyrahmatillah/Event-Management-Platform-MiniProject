@@ -4,13 +4,13 @@ import { TicketTypeInput } from "@/validations/ticketType.validation.js";
 
 export class TicketTypeService {
   async organizerIdMatches(eventId: number, userId: number) {
-    const event = await prisma.event.findUnique({
+    const event = await prisma.event.findUniqueOrThrow({
       where: { id: eventId },
+      select: { organizerId: true },
     });
-    if (!event) throw new AppError("Event not found", 404);
-    if (event.organizerId !== userId)
-      throw new AppError("Organizer ID does not match", 403);
-
+    if (event.organizerId !== userId) {
+      throw new AppError("You are not authorized to manage this event", 401);
+    }
     return true;
   }
 
@@ -28,5 +28,22 @@ export class TicketTypeService {
     if (tickets.length === 0)
       throw new AppError("No tickets found for this event", 404);
     return tickets;
+  }
+
+  async updateTicketType(ticketId: number, ticketData: TicketTypeInput) {
+    const updatedTicket = await prisma.ticketType.update({
+      where: { id: ticketId },
+      data: ticketData,
+    });
+    if (!updatedTicket) throw new AppError("Ticket not found", 404);
+    return updatedTicket;
+  }
+
+  async deleteTicketType(ticketId: number) {
+    const deletedTicket = await prisma.ticketType.delete({
+      where: { id: ticketId },
+    });
+    if (!deletedTicket) throw new AppError("Ticket not found", 404);
+    return deletedTicket;
   }
 }

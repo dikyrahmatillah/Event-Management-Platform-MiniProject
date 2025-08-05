@@ -31,8 +31,8 @@ import { ticketService } from "@/lib/api/ticket-service";
 import { toast } from "sonner";
 import { EventTypes } from "@/types/event.types";
 import { TicketTypes } from "@/types/ticket.types";
+import { useSession } from "next-auth/react";
 
-// Schema for ticket type form
 const ticketTypeSchema = z.object({
   typeName: z.string().min(1, "Ticket type name is required"),
   description: z.string().optional(),
@@ -48,6 +48,7 @@ export default function TicketTypesPage() {
   const eventId = params.id as string;
   const eventService = new EventService();
 
+  const { data: session } = useSession();
   const [event, setEvent] = useState<EventTypes | null>(null);
   const [ticketTypes, setTicketTypes] = useState<TicketTypes[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +73,10 @@ export default function TicketTypesPage() {
         const eventData = await eventService.getEventById(Number(eventId));
         setEvent(eventData);
 
+        const token = session?.user?.accessToken;
         const ticketData = await ticketService.getTicketsByEventId(
-          Number(eventId)
+          Number(params.id),
+          token
         );
         setTicketTypes(ticketData);
       } catch (error) {
@@ -102,22 +105,26 @@ export default function TicketTypesPage() {
       };
 
       if (editingTicket) {
-        // Update existing ticket type
-        await ticketService.updateTicketType(editingTicket.id, ticketData);
+        await ticketService.updateTicketType(
+          editingTicket.id,
+          ticketData,
+          session?.user?.accessToken
+        );
         toast.success("Ticket type updated successfully");
       } else {
-        // Create new ticket type
-        await ticketService.createTicketType(ticketData);
+        await ticketService.createTicketType(
+          ticketData,
+          session?.user?.accessToken
+        );
         toast.success("Ticket type created successfully");
       }
 
-      // Refresh ticket types
       const updatedTickets = await ticketService.getTicketsByEventId(
-        Number(eventId)
+        Number(eventId),
+        session?.user?.accessToken
       );
       setTicketTypes(updatedTickets);
 
-      // Reset form
       form.reset();
       setEditingTicket(null);
       setShowForm(false);
@@ -147,12 +154,15 @@ export default function TicketTypesPage() {
     if (!confirm("Are you sure you want to delete this ticket type?")) return;
 
     try {
-      await ticketService.deleteTicketType(ticketId);
+      await ticketService.deleteTicketType(
+        ticketId,
+        session?.user?.accessToken
+      );
       toast.success("Ticket type deleted successfully");
 
-      // Refresh ticket types
       const updatedTickets = await ticketService.getTicketsByEventId(
-        Number(eventId)
+        Number(eventId),
+        session?.user?.accessToken
       );
       setTicketTypes(updatedTickets);
     } catch (error) {
@@ -363,68 +373,49 @@ export default function TicketTypesPage() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {ticketTypes.map((ticket) => (
-                    <div
-                      key={ticket.id}
-                      className="border rounded-lg p-4 flex items-center justify-between"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-medium">{ticket.typeName}</h3>
-                          <Badge variant="secondary">
-                            IDR{" "}
-                            {(typeof ticket.price === "string"
-                              ? parseInt(ticket.price)
-                              : ticket.price
-                            ).toLocaleString()}
-                          </Badge>
+                    <div key={ticket.id} className="border rounded-lg p-4">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                        <div>
+                          <div className="font-medium">{ticket.typeName}</div>
+                          {ticket.description && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {ticket.description}
+                            </p>
+                          )}
                         </div>
-                        {ticket.description && (
-                          <p className="text-sm text-muted-foreground mb-2">
-                            {ticket.description}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <span>
+
+                        <div className="flex flex-col items-end gap-1">
+                          <Badge variant="secondary" className="font-semibold">
+                            IDR {Number(ticket.price).toLocaleString()}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground">
                             {ticket.availableQuantity} of {ticket.quantity}{" "}
                             available
-                          </span>
-                          <div className="w-32 bg-muted rounded-full h-2">
-                            <div
-                              className="bg-primary rounded-full h-2"
-                              style={{
-                                width: `${
-                                  ((ticket.quantity -
-                                    ticket.availableQuantity) /
-                                    ticket.quantity) *
-                                  100
-                                }%`,
-                              }}
-                            />
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(ticket)}
-                          className="flex items-center gap-1"
-                        >
-                          <EditIcon className="h-3 w-3" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(ticket.id)}
-                          className="flex items-center gap-1 text-destructive hover:text-destructive"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                          Delete
-                        </Button>
+                        <div className="flex items-center gap-2 md:ml-4 mt-2 md:mt-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(ticket)}
+                            className="flex items-center gap-1"
+                          >
+                            <EditIcon className="h-3 w-3" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(ticket.id)}
+                            className="flex items-center gap-1 text-destructive hover:text-destructive"
+                          >
+                            <TrashIcon className="h-3 w-3" />
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
