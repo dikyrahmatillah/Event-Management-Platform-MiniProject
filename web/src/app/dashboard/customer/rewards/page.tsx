@@ -1,3 +1,6 @@
+"use client";
+
+import React from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,11 +11,8 @@ import {
 } from "@/components/ui/atomic/breadcrumb";
 import { Separator } from "@/components/ui/atomic/separator";
 import { SidebarTrigger } from "@/components/ui/atomic/sidebar";
-import { StatisticsMetrics } from "./components/statistics-metrics";
-import { UnifiedAnalytics } from "./components/unified-analytics";
-import { EventPerformanceTable } from "./components/event-performance-table";
 
-export default function Analytics() {
+export default function CustomerRewardsPage() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
@@ -24,11 +24,13 @@ export default function Analytics() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbLink href="/customer">
+                Customer Dashboard
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden md:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>Analytics</BreadcrumbPage>
+              <BreadcrumbPage>Rewards</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -36,14 +38,14 @@ export default function Analytics() {
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <StatisticsMetrics />
-
             <div className="px-4 lg:px-6">
-              <UnifiedAnalytics />
+              <h1 className="text-3xl font-bold">My Rewards</h1>
+              <p className="text-muted-foreground">
+                Manage your points, coupons, and referral benefits.
+              </p>
             </div>
-
             <div className="px-4 lg:px-6">
-              <EventPerformanceTable />
+              <p>Rewards system features coming soon...</p>
             </div>
           </div>
         </div>
