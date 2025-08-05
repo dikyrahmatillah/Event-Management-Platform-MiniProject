@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { SearchForm } from "@/features/dashboard/components/search-form";
 import {
@@ -17,10 +18,6 @@ import {
   SidebarRail,
 } from "@/components/ui/atomic/sidebar";
 import Image from "next/image";
-
-interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
-  userRole?: string;
-}
 
 const organizerNavigation = [
   {
@@ -106,17 +103,22 @@ const customerNavigation = [
   },
 ];
 
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  userRole?: string;
+}
+
 export function AppSidebar({ userRole, ...props }: AppSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  // Prefer prop if provided, else fallback to session
+  const role = userRole || session?.user?.role;
 
-  // Get navigation based on user role
   const getNavigationForRole = () => {
-    if (userRole === "ORGANIZER") {
+    if (role === "ORGANIZER") {
       return organizerNavigation;
-    } else if (userRole === "CUSTOMER") {
+    } else if (role === "CUSTOMER") {
       return customerNavigation;
     }
-    // Default to organizer navigation for fallback
     return organizerNavigation;
   };
 
