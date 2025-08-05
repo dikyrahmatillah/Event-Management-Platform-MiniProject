@@ -7,6 +7,7 @@ type DecodedToken = {
   name: string;
   email: string;
   role: string;
+  accessToken?: string;
 };
 
 declare module "next-auth" {
@@ -51,7 +52,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!token) return null;
 
           return { accessToken: token };
-        } catch {
+        } catch (error) {
+          console.error(error);
           return null;
         }
       },
@@ -84,6 +86,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.name = user.name;
         session.user.email = user.email;
         session.user.role = user.role;
+        session.user.accessToken = user.accessToken;
       }
 
       return session;

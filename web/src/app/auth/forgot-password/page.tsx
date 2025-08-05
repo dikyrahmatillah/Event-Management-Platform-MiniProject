@@ -53,7 +53,8 @@ export default function ForgotPasswordPage() {
       }
 
       toast.success("Reset link sent to your email.");
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);

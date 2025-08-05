@@ -35,6 +35,7 @@ export const loginSchema = registerSchema.pick({
 export const updateProfileSchema = registerSchema.pick({
   firstName: true,
   lastName: true,
+  email: true,
   phone: true,
   profilePicture: true,
 });
