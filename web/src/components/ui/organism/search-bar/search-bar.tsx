@@ -1,10 +1,22 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-
+// import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/atomic/dropdown-menu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { searchSchema, type SearchFormData } from "@/components/ui/organism/search-bar/schema/search-validation";
+import {
+  searchSchema,
+  type SearchFormData,
+} from "@/components/ui/organism/search-bar/schema/search-validation";
 import { useDebounce } from "@/components/ui/organism/search-bar/hooks/search-debounce";
 
 import { Button } from "@/components/ui/atomic/button";
@@ -12,6 +24,7 @@ import { HiMapPin, HiMiniChevronDown } from "react-icons/hi2";
 
 export default function SearchBar() {
   const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [lableButton, setLableButton] = React.useState("Location");
   const [isSearching, setIsSearching] = useState(false);
 
   // React Hook Form setup
@@ -36,18 +49,15 @@ export default function SearchBar() {
     performSearch(data.query);
   };
 
-  // Perform search function
   const performSearch = async (searchQuery: string) => {
     setIsSearching(true);
     try {
-      // Simulate API call - replace with your actual search logic
       const mockResults = [
         `Result 1 for "${searchQuery}"`,
         `Result 2 for "${searchQuery}"`,
         `Result 3 for "${searchQuery}"`,
       ];
 
-      // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 300));
       setSearchResults(mockResults);
     } catch (error) {
@@ -69,11 +79,40 @@ export default function SearchBar() {
   }, [debouncedQuery]);
 
   return (
-    <div className="w-full max-w-sm mx-auto p-3 sm:p-6 sm:max-w-md">
+    <div className="">
       <div className="flex">
         <div className="">
-          {/* Search Input Section */}
-          <div className="flex gap-2 w-[400px] border p-1 bg-white">
+          <div className="flex rounded-md gap-2 w-[400px] md:w-[680px] lg:w-[720] border p-1 bg-white">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant={"ghost"}
+                  size={"default"}
+                  className="flex m-auto py-3 px-1.5 font-sans gap-1.5 hover:bg-blue-100/80 cursor-pointer"
+                >
+                  <HiMapPin />
+                  {lableButton}
+                  <HiMiniChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel className="font-sans">
+                  Filter by
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={lableButton}
+                  onValueChange={setLableButton}
+                >
+                  <DropdownMenuRadioItem value="Location" className="font-sans">
+                    Location
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="Category" className="font-sans">
+                    Category
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Controller
               name="query"
               control={control}
@@ -82,27 +121,17 @@ export default function SearchBar() {
                   {...field}
                   type="text"
                   placeholder="Search events"
-                  className="w-full pl-2 py-2 text-sm focus:outline-none focus:bg-blue-100 bg-white font-sans focus:border-transparent disabled:bg-gray-100 sm:text-base"
+                  className="w-full pl-2 py-2 text-sm focus:outline-none focus:bg-blue-100 bg-white font-sans focus:border-transparent focus:rounded-md disabled:bg-gray-100 sm:text-base"
                 />
               )}
             />
-            <Button
-              variant={"ghost"}
-              size={"sm"}
-              className="font-sans gap-1.5 hover:bg-blue-100/40"
-            >
-              <HiMapPin />
-              Location
-              <HiMiniChevronDown />
-            </Button>
-          </div>
-          <div>
+
             <Button
               type="button"
               onClick={handleSubmit(onSubmit)}
               disabled={!isValid || isSearching}
               size="sm"
-              className="font-sans gap-1 text-sm hover:bg-blue-100/40 cursor-pointer sm:gap-1.5 sm:text-base"
+              className="font-sans m-auto text-sm hover:bg-blue-100/40 cursor-pointer sm:text-base"
             >
               Search
             </Button>
@@ -154,46 +183,3 @@ export default function SearchBar() {
     </div>
   );
 }
-
-//   return (
-//     <div className="flex gap-2 w-[400px] border p-1 bg-white">
-//       <Button
-//         variant={"ghost"}
-//         size={"sm"}
-//         className="font-sans gap-1.5 hover:bg-blue-100/40 cursor-pointer"
-//       >
-//         <HiMapPin />
-//         Location
-//         <HiMiniChevronDown />
-//       </Button>
-//       <Controller
-//         name="query"
-//         control={control}
-//         render={({ field }) => (
-//           <Input
-//             {...field}
-//             type="text"
-//             placeholder="Search... (min 3 characters)"
-//             className="w-full pl-10 pr-20 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-//             onChange={(e) => {
-//               field.onChange(e);
-//             }}
-//           />
-//         )}
-//       />
-
-//       <Button
-//         type="button"
-//         onClick={handleSubmit(onSubmit)}
-//         disabled={!isValid}
-//         className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 px-3 bg-blue-600 text-white text-sm rounded disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
-//       >
-//         Search
-//       </Button>
-
-//       {errors.query && (
-//         <p className="text-red-600 text-sm mt-1">{errors.query.message}</p>
-//       )}
-//     </div>
-//   );
-// }

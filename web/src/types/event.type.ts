@@ -15,3 +15,10 @@ export type EventTypes = {
   imageUrl: string;
   status: EventStatus;
 };
+
+export type TicketTypes = {
+  id: number;
+  nameType: string;
+  price: number;
+  quantity: number;
+};
