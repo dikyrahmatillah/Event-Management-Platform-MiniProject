@@ -1,11 +1,16 @@
-type EventStatus = "ACTIVE" | "INACTIVE" | "CANCELLED";
+type EventCategory =
+  | "seminar"
+  | "festival"
+  | "entertainment"
+  | "music"
+  | "sport";
 
 export type EventTypes = {
   id: number;
   organizerId: number;
   eventName: string;
   description: string;
-  category: string;
+  category: EventCategory;
   location: string;
   price: string;
   startDate: string;
@@ -14,11 +19,4 @@ export type EventTypes = {
   availableSeats: number;
   imageUrl: string;
   status: EventStatus;
-};
-
-export type TicketTypes = {
-  id: number;
-  nameType: string;
-  price: number;
-  quantity: number;
 };

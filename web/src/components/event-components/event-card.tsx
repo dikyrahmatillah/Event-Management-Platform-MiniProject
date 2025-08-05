@@ -38,7 +38,9 @@ export default function EventCard({ event }: EventCardProps) {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const res = await fetch(`http://localhost:8000/api/v1/events`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/events`
+        );
         console.log(res);
         if (!res.ok) throw new Error("Failed to fetch events");
 
