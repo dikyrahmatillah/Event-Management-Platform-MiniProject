@@ -10,8 +10,8 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <AppSidebar />
       <SessionProviderWrapper>
+        <AppSidebar />
         <AuthGuard>
           <SidebarInset className="flex flex-1 flex-col">
             {children}
