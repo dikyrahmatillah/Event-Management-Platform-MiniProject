@@ -2,7 +2,8 @@
 
 import { EventTypes } from "@/types/event.types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
 
 class EventService {
   private async fetchWithErrorHandling(url: string, options?: RequestInit) {
@@ -26,32 +27,33 @@ class EventService {
     }
   }
 
-  // Get all events with optional filters
-  async getAllEvents(filters?: {
-    status?: string;
-    category?: string;
-    organizerId?: number;
-  }): Promise<EventTypes[]> {
-    const params = new URLSearchParams();
+  async getAllEventsByOrganizer(
+    organizerId: number,
+    params: { page?: number; limit?: number; category?: string } = {}
+  ): Promise<EventTypes[]> {
+    const queryParams = new URLSearchParams(params as Record<string, string>);
+    const url = `${API_BASE_URL}/api/v1/events/organizer/${organizerId}${
+      queryParams.toString() ? `?${queryParams.toString()}` : ""
+    }`;
+    const res = await this.fetchWithErrorHandling(url);
+    return res.data;
+  }
 
-    if (filters?.status) params.append("status", filters.status);
-    if (filters?.category) params.append("category", filters.category);
-    if (filters?.organizerId)
-      params.append("organizerId", filters.organizerId.toString());
+  async getEventById(id: number): Promise<EventTypes> {
+    const url = `${API_BASE_URL}/api/v1/events/details/${id}`;
+    return this.fetchWithErrorHandling(url);
+  }
 
+  async getAllEvents(
+    filters: { status?: string; category?: string } = {}
+  ): Promise<EventTypes[]> {
+    const params = new URLSearchParams(filters);
     const url = `${API_BASE_URL}/api/events${
       params.toString() ? `?${params.toString()}` : ""
     }`;
     return this.fetchWithErrorHandling(url);
   }
 
-  // Get single event by ID
-  async getEventById(id: number): Promise<EventTypes> {
-    const url = `${API_BASE_URL}/api/events/${id}`;
-    return this.fetchWithErrorHandling(url);
-  }
-
-  // Create new event
   async createEvent(eventData: Omit<EventTypes, "id">): Promise<EventTypes> {
     const url = `${API_BASE_URL}/api/events`;
     return this.fetchWithErrorHandling(url, {
@@ -60,7 +62,6 @@ class EventService {
     });
   }
 
-  // Update existing event
   async updateEvent(
     id: number,
     eventData: Partial<EventTypes>
@@ -72,7 +73,6 @@ class EventService {
     });
   }
 
-  // Delete event
   async deleteEvent(id: number): Promise<EventTypes> {
     const url = `${API_BASE_URL}/api/events/${id}`;
     return this.fetchWithErrorHandling(url, {
@@ -80,17 +80,14 @@ class EventService {
     });
   }
 
-  // Get events by status
   async getActiveEvents(): Promise<EventTypes[]> {
     return this.getAllEvents({ status: "ACTIVE" });
   }
 
-  // Get events by category
   async getEventsByCategory(category: string): Promise<EventTypes[]> {
     return this.getAllEvents({ category });
   }
 
-  // Search events (you could implement this on the backend)
   async searchEvents(query: string): Promise<EventTypes[]> {
     const allEvents = await this.getAllEvents();
     return allEvents.filter(
@@ -102,8 +99,6 @@ class EventService {
   }
 }
 
-// Export a singleton instance
 export const eventService = new EventService();
 
-// Export the class for testing or custom instances
 export default EventService;

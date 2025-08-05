@@ -8,7 +8,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
 import { ProfileFormInput } from "../schema/profile.schema";
 import { Copy } from "lucide-react";

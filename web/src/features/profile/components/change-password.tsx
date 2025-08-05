@@ -6,10 +6,10 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
 import { Button } from "@/components/ui/atomic/button";
-import { Form } from "@/components/ui/form";
+import { Form } from "@/components/ui/atomic/form";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";

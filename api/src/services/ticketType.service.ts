@@ -20,4 +20,13 @@ export class TicketTypeService {
     });
     return createdTickets;
   }
+
+  async getTicketsByEventId(eventId: number) {
+    const tickets = await prisma.ticketType.findMany({
+      where: { eventId },
+    });
+    if (tickets.length === 0)
+      throw new AppError("No tickets found for this event", 404);
+    return tickets;
+  }
 }

@@ -55,4 +55,8 @@ export class EventService {
     });
     return { message: "Event deleted successfully" };
   }
+
+  async getEventsByOrganizer(organizerId: number) {
+    return prisma.event.findMany({ where: { organizerId } });
+  }
 }

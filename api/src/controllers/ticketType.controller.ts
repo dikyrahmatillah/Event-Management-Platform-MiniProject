@@ -26,6 +26,25 @@ export class TicketController {
       next(error);
     }
   };
+
+  getTicketsByEventId = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const eventId = Number(request.params.eventId);
+      await this.ticketTypeService.organizerIdMatches(eventId, request.user.id);
+
+      const tickets = await this.ticketTypeService.getTicketsByEventId(eventId);
+      return response.status(200).json({
+        message: "Tickets retrieved successfully",
+        data: tickets,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const ticketController = new TicketController();

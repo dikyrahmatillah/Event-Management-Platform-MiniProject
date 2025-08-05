@@ -89,6 +89,12 @@ export class EventController {
       }
 
       const event = await this.eventService.getEventById(eventId);
+      if (!event) {
+        return response.status(404).json({
+          success: false,
+          message: "Event not found",
+        });
+      }
 
       response.status(200).json({
         success: true,
@@ -199,6 +205,32 @@ export class EventController {
       response.status(200).json({
         success: true,
         message: "Your events retrieved successfully",
+        data: events,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAllEventsByOrganizer = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const organizerId = parseInt(request.params.id);
+
+      if (isNaN(organizerId)) {
+        return response.status(400).json({
+          success: false,
+          message: "Invalid organizer ID",
+        });
+      }
+
+      const events = await this.eventService.getEventsByOrganizer(organizerId);
+      response.status(200).json({
+        success: true,
+        message: "Events retrieved successfully",
         data: events,
       });
     } catch (error) {

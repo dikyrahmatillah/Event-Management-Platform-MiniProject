@@ -14,18 +14,18 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/atomic/textarea";
+import { Button } from "@/components/ui/atomic/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+} from "@/components/ui/atomic/popover";
+import { Calendar } from "@/components/ui/atomic/calendar";
 import { cn } from "@/lib/utils";
 import IDRCurrencyInput from "@/app/dashboard/events/idr";
 
