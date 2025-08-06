@@ -33,7 +33,12 @@ export default function EventForm() {
   const form = useForm<EventFormSchema>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
+      eventName: "",
+      eventDescription: "",
+      category: "",
+      location: "",
       price: 0,
+      totalSeats: 0,
       ticketTypes: [],
     },
   });
@@ -99,6 +104,34 @@ export default function EventForm() {
                 <FormLabel>Event Description</FormLabel>
                 <FormControl>
                   <Textarea {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location</FormLabel>
+                <FormControl>
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -196,10 +229,10 @@ export default function EventForm() {
 
           <FormField
             control={form.control}
-            name="availableSeat"
+            name="totalSeats"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Available Seats</FormLabel>
+                <FormLabel>Total Seats</FormLabel>
                 <FormControl>
                   <Input type="number" {...field} />
                 </FormControl>
@@ -215,7 +248,18 @@ export default function EventForm() {
               <FormItem>
                 <FormLabel>Ticket Types (Optional)</FormLabel>
                 <FormControl>
-                  <select multiple {...field}>
+                  <select
+                    multiple
+                    className="flex h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={Array.isArray(field.value) ? field.value : []}
+                    onChange={(e) => {
+                      const selected = Array.from(
+                        e.target.selectedOptions,
+                        (option) => option.value
+                      );
+                      field.onChange(selected);
+                    }}
+                  >
                     <option value="Pre Sale">Pre Sale</option>
                     <option value="Regular">Regular</option>
                     <option value="VIP">VIP</option>
