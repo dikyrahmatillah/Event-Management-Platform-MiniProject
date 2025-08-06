@@ -2,7 +2,7 @@ import axios from "axios";
 import { EventTypes } from "@/types/event.type";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -19,18 +19,47 @@ class EventService {
     const { data } = await apiClient.get(`/events/organizer/${organizerId}`, {
       params,
     });
-    return data;
+    return data.data.events;
   }
 
   async getEventById(id: number) {
     const { data } = await apiClient.get(`/events/details/${id}`);
-    return data;
+    return data.data;
   }
 
-  async updateEvent(id: number, eventData: Partial<EventTypes>) {
+  async updateEvent(
+    id: number,
+    eventData: Record<string, unknown>,
+    imageFile?: File,
+    token?: string
+  ) {
+    const formData = new FormData();
+
+    // Append all event data fields to FormData
+    Object.entries(eventData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
+    // Only append image file if provided
+    if (imageFile) {
+      formData.append("imageUrl", imageFile);
+    }
+
     const { data } = await apiClient.put<EventTypes>(
       `/events/${id}`,
-      eventData
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      }
     );
     return data;
   }

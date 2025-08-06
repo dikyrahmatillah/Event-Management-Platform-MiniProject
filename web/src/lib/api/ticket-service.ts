@@ -30,7 +30,7 @@ class TicketService {
       `/tickets/${eventId}`,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
     );
-    return res.data;
+    return res.data.data;
   }
 
   async createTicketType(ticketData: CreateTicketTypeData, token?: string) {
@@ -39,7 +39,7 @@ class TicketService {
       ticketData,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
     );
-    return res.data;
+    return res.data.data;
   }
 
   async updateTicketType(

@@ -171,9 +171,8 @@ export class EventService {
 
     if (!existingEvent) throw new AppError("Event not found", 404);
 
-    // Check if user owns this event
     if (existingEvent.organizerId !== organizerId) {
-      throw new AppError("Unauthorized to update this event", 403);
+      throw new AppError("Unauthorized to update this event", 401);
     }
 
     const updatedEvent = await prisma.event.update({

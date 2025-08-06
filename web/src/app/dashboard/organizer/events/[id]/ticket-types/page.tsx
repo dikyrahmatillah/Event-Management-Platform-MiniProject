@@ -29,7 +29,7 @@ import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 import EventService from "@/lib/api/event-service";
 import { ticketService } from "@/lib/api/ticket-service";
 import { toast } from "sonner";
-import { EventTypes } from "@/types/event.types";
+import { EventTypes } from "@/types/event.type";
 import { TicketTypes } from "@/types/ticket.types";
 import { useSession } from "next-auth/react";
 

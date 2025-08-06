@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 export const eventFormSchema = z.object({
-  eventBanner: z.custom<File>((file) => file instanceof File, {
-    message: "Image is required",
-  }),
+  eventBanner: z
+    .custom<File>((file) => file instanceof File, {
+      message: "Image is required",
+    })
+    .optional(),
   eventName: z.string().min(1, "Event name is required"),
   eventDescription: z
     .string()
@@ -15,6 +17,7 @@ export const eventFormSchema = z.object({
   startDate: z.date("Start date is required"),
   endDate: z.date("End date is required"),
   ticketTypes: z.array(z.string()).optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "CANCELLED"]),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;
