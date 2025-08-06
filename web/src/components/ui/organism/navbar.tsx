@@ -30,25 +30,26 @@ export default function Navbar() {
   return (
     <nav className="w-full border-b px-4 py-4 shadow-sm sticky top-0 bg-white z-50">
       <div className="flex items-center justify-between">
-        <Link href="/">
-          <Image
-            src="/assets/logo.svg"
-            alt="evently logo "
-            width={190}
-            height={36}
-            className="h-10 w-[170px] hidden md:flex lg:flex"
-          />
-        </Link>
-        <Link href="/">
-          <Image
-            src="/assets/logo_responsive.svg"
-            alt="evently logo responsive"
-            width={32}
-            height={32}
-            className="flex md:hidden lg:hidden"
-          />
-        </Link>
-        <div className="md:hidden lg:hidden"></div>
+        <div className="flex">
+          <Link href="/">
+            <Image
+              src="/assets/logo.svg"
+              alt="evently logo "
+              width={190}
+              height={36}
+              className="h-10 w-[170px] hidden md:flex lg:flex"
+            />
+          </Link>
+          <Link href="/">
+            <Image
+              src="/assets/logo_responsive.svg"
+              alt="evently logo responsive"
+              width={32}
+              height={32}
+              className="flex md:hidden lg:hidden"
+            />
+          </Link>
+        </div>
         <div className="hidden lg:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
