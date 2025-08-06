@@ -4,6 +4,7 @@ import { Router } from "express";
 const router = Router();
 
 router.post("/", transactionController.createTransaction);
+router.get("/analytics", transactionController.getAnalytics);
 router.get("/:transactionId", transactionController.getTransactionById);
 router.put("/:transactionId", transactionController.updateTransaction);
 router.delete("/:transactionId", transactionController.deleteTransaction);

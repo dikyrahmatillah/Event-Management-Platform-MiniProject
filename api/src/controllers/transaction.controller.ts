@@ -97,6 +97,29 @@ export class TransactionController {
       next(error);
     }
   };
+
+  getAnalytics = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { timeRange } = request.query;
+      const organizerId = request.user?.id; // Assuming auth middleware sets user
+
+      const analytics = await this.transactionService.getAnalytics(
+        (timeRange as string) || "this-day",
+        organizerId
+      );
+
+      return response.status(200).json({
+        message: "Analytics retrieved successfully",
+        data: analytics,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const transactionController = new TransactionController();
