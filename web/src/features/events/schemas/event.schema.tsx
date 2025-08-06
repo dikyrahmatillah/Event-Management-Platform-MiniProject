@@ -15,6 +15,7 @@ export const eventFormSchema = z.object({
   startDate: z.date("Start date is required"),
   endDate: z.date("End date is required"),
   ticketTypes: z.array(z.string()).optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "CANCELLED"]),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;

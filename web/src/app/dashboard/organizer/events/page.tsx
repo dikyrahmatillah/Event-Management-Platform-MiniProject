@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarIcon, PlusCircle, Search } from "lucide-react";
+import { CalendarIcon, PlusCircle, Search, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/atomic/card";
 import { Badge } from "@/components/ui/atomic/badge";
 import { Button } from "@/components/ui/atomic/button";
@@ -18,6 +18,7 @@ import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-p
 import { EventTypes } from "@/types/event.type";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import EventService from "@/lib/api/event-service";
 const eventService = new EventService();
@@ -39,8 +40,8 @@ export default function EventsManagementPage() {
         const response = await eventService.getAllEventsByOrganizer(
           Number(session.user.id)
         );
-        setEvents(response.events); // instead of setEvents(response)
-        setFilteredEvents(response.events);
+        setEvents(response);
+        setFilteredEvents(response);
       } catch (err) {
         setError("Failed to fetch events. Please try again.");
         console.error("Error fetching events:", err);
@@ -174,6 +175,8 @@ export default function EventsManagementPage() {
               events={filteredEvents}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -182,6 +185,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "ACTIVE")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -190,6 +195,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "INACTIVE")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -198,6 +205,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "CANCELLED")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
         </Tabs>
@@ -210,11 +219,36 @@ function EventsTable({
   events,
   isLoading,
   error,
+  setEvents,
+  setFilteredEvents,
 }: {
   events: EventTypes[];
   isLoading: boolean;
   error: string | null;
+  setEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
+  setFilteredEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
 }) {
+  const handleDeleteEvent = async (eventId: number, eventName: string) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${eventName}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await eventService.deleteEvent(eventId);
+      toast.success(`Event "${eventName}" deleted successfully`);
+
+      // Update both events arrays
+      setEvents((prev) => prev.filter((e) => e.id !== eventId));
+      setFilteredEvents((prev) => prev.filter((e) => e.id !== eventId));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event. Please try again.");
+    }
+  };
   if (isLoading) {
     return (
       <Card className="p-8">
@@ -298,7 +332,12 @@ function EventsTable({
                       </div>
                     )}
                     <div>
-                      <p className="font-medium">{event.eventName}</p>
+                      <Link
+                        href={`/dashboard/organizer/events/${event.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {event.eventName}
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {event.category}
                       </p>
@@ -328,18 +367,16 @@ function EventsTable({
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2 justify-end">
-                    <Link href={`/dashboard/organizer/events/${event.id}`}>
-                      <Button size="sm" variant="outline">
-                        View
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/dashboard/organizer/events/${event.id}/attendees`}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        handleDeleteEvent(event.id, event.eventName)
+                      }
                     >
-                      <Button size="sm" variant="outline">
-                        Attendees
-                      </Button>
-                    </Link>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </td>
               </tr>

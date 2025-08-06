@@ -19,12 +19,12 @@ class EventService {
     const { data } = await apiClient.get(`/events/organizer/${organizerId}`, {
       params,
     });
-    return data;
+    return data.data.events;
   }
 
   async getEventById(id: number) {
     const { data } = await apiClient.get(`/events/details/${id}`);
-    return data;
+    return data.data;
   }
 
   async updateEvent(id: number, eventData: Partial<EventTypes>) {

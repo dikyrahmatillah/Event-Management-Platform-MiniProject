@@ -21,6 +21,7 @@ import {
   TicketIcon,
   EditIcon,
   ArrowLeftIcon,
+  Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +30,7 @@ import EventService from "@/lib/api/event-service";
 import { EventTypes } from "@/types/event.type";
 import { ticketService } from "@/lib/api/ticket-service";
 import { TicketTypes } from "@/types/ticket.types";
+import { toast } from "sonner";
 
 // Helper function to check valid date
 function isValidDate(date: unknown) {
@@ -48,17 +50,36 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleDeleteEvent = async () => {
+    if (!event) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${event.eventName}"? This action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await eventService.deleteEvent(event.id);
+      toast.success(`Event "${event.eventName}" deleted successfully`);
+      router.push("/dashboard/organizer/events");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event. Please try again.");
+    }
+  };
+
   useEffect(() => {
     const fetchEventAndTickets = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch event details first
         const data = await eventService.getEventById(Number(params.id));
         setEvent(data);
 
-        // Fetch tickets separately - if this fails, we still show the event
         try {
           const token = session?.user?.accessToken;
           const ticketData = await ticketService.getTicketsByEventId(
@@ -68,7 +89,6 @@ export default function EventDetailPage() {
           setTicketTypes(ticketData);
         } catch (ticketError) {
           console.warn("Failed to fetch tickets:", ticketError);
-          // Set empty array for tickets but don't fail the whole page
           setTicketTypes([]);
         }
       } catch (error) {
@@ -269,6 +289,12 @@ export default function EventDetailPage() {
                         <span className="italic">No seats info</span>
                       )}
                     </div>
+                    <div className="flex items-center gap-2">
+                      <CreditCardIcon className="h-4 w-4" />
+                      {event.price
+                        ? `IDR ${parseInt(event.price).toLocaleString()}`
+                        : "Free event"}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -345,16 +371,7 @@ export default function EventDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-between border-t pt-6 mt-6">
-              <div className="text-sm text-muted-foreground">
-                <p className="flex items-center gap-1">
-                  <CreditCardIcon className="h-4 w-4" />
-                  {event.price
-                    ? `IDR ${parseInt(event.price).toLocaleString()}`
-                    : "Free event"}
-                </p>
-              </div>
-
+            <div className="flex flex-wrap items-center  justify-around border-t pt-6 mt-6">
               <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
                 <Link
                   href={`/dashboard/organizer/events/${event.id}/ticket-types`}
@@ -378,6 +395,14 @@ export default function EventDetailPage() {
                     Edit Event
                   </Button>
                 </Link>
+                <Button
+                  variant="destructive"
+                  className="flex items-center gap-2"
+                  onClick={handleDeleteEvent}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                  Delete Event
+                </Button>
               </div>
             </div>
           </CardContent>

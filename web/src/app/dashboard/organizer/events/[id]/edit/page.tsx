@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
 import { Textarea } from "@/components/ui/atomic/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/atomic/select";
 import { Button } from "@/components/ui/atomic/button";
 import {
   CalendarIcon,
@@ -49,12 +56,17 @@ export default function EditEventPage() {
   const form = useForm<EventFormSchema>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
+      eventBanner: undefined as File | undefined,
       eventName: "",
       eventDescription: "",
       category: "",
       location: "",
       price: 0,
       totalSeats: 0,
+      startDate: undefined,
+      endDate: undefined,
+      ticketTypes: [],
+      status: "ACTIVE" as "ACTIVE" | "INACTIVE" | "CANCELLED",
     },
   });
 
@@ -70,13 +82,12 @@ export default function EditEventPage() {
         setLoading(true);
         const eventData = await eventService.getEventById(Number(eventId));
 
-        // If event has image, set preview
         if (eventData.imageUrl) {
           setImagePreview(eventData.imageUrl);
         }
 
-        // Map the API data structure to our form structure
         form.reset({
+          eventBanner: undefined as File | undefined,
           eventName: eventData.eventName || "",
           eventDescription: eventData.description || "",
           category: eventData.category || "",
@@ -86,11 +97,14 @@ export default function EditEventPage() {
               ? parseInt(eventData.price) || 0
               : eventData.price || 0,
           totalSeats: eventData.totalSeats || 0,
-          eventBanner: undefined, // Ensure eventBanner is undefined, not null or string
           startDate: eventData.startDate
             ? new Date(eventData.startDate)
             : undefined,
           endDate: eventData.endDate ? new Date(eventData.endDate) : undefined,
+          ticketTypes: eventData.ticketTypes || [],
+          status:
+            (eventData.status as "ACTIVE" | "INACTIVE" | "CANCELLED") ||
+            "ACTIVE",
         });
       } catch (err) {
         console.error("Failed to fetch event data:", err);
@@ -118,6 +132,7 @@ export default function EditEventPage() {
         totalSeats: data.totalSeats,
         startDate: data.startDate?.toISOString(),
         endDate: data.endDate?.toISOString(),
+        status: data.status,
         // Add other fields as needed based on your API
       };
 
@@ -302,6 +317,36 @@ export default function EditEventPage() {
                       )}
                     />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="status"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Status</FormLabel>
+                            <FormControl>
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={field.disabled}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="ACTIVE">Active</SelectItem>
+                                  <SelectItem value="INACTIVE">
+                                    Inactive
+                                  </SelectItem>
+                                  <SelectItem value="CANCELLED">
+                                    Cancelled
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="category"

@@ -30,6 +30,21 @@ class AttendeeService {
     );
     return res.data.data;
   }
+
+  async updateAttendeeStatus(
+    attendeeId: number,
+    status: "REGISTERED" | "ATTENDED" | "NO_SHOW",
+    token?: string
+  ) {
+    const res = await apiClient.put<{ data: Attendee }>(
+      `/attendees/${attendeeId}`,
+      { status },
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      }
+    );
+    return res.data.data;
+  }
 }
 
 export const attendeeService = new AttendeeService();
