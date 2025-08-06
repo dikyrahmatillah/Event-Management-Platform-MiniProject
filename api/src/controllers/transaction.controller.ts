@@ -40,6 +40,29 @@ export class TransactionController {
     }
   };
 
+  updateTransactionStatus = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const transactionId = Number(request.params.transactionId);
+      const { newStatus } = request.body;
+
+      const updatedTransactionStatus =
+        await this.transactionService.updateTransactionStatus(
+          transactionId,
+          newStatus
+        );
+      return response.status(200).json({
+        message: "Transaction status updated successfully",
+        data: updatedTransactionStatus,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   updateTransaction = async (
     request: Request,
     response: Response,
