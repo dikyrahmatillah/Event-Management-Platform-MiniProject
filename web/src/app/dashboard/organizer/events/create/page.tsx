@@ -28,7 +28,6 @@ import {
 import { Calendar } from "@/components/ui/atomic/calendar";
 import { cn } from "@/lib/utils";
 import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
-import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 
 export default function EventForm() {
   const form = useForm<EventFormSchema>({
