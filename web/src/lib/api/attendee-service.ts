@@ -1,82 +1,35 @@
+import axios from "axios";
 import { AttendeeListResponse, Attendee } from "@/types/attendee.types";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 class AttendeeService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  /**
-   * Fetch attendees for a specific event
-   */
-  async getAttendeesByEventId(
-    eventId: number,
-    token?: string
-  ): Promise<AttendeeListResponse> {
-    try {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+  async getAttendeesByEventId(eventId: number, token?: string) {
+    const res = await apiClient.get<{ data: AttendeeListResponse }>(
+      `/attendees/event/${eventId}`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       }
-
-      const res = await fetch(
-        `${this.baseUrl}/api/v1/attendees/event/${eventId}`,
-        {
-          headers,
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to fetch attendees (${res.status})`
-        );
-      }
-
-      const json = await res.json();
-      console.log("Fetched attendees:", json.data);
-      return json.data || [];
-    } catch (error) {
-      console.error("Error fetching attendees:", error);
-      throw error;
-    }
+    );
+    return res.data.data || [];
   }
 
-  /**
-   * Get an attendee by ID
-   */
-  async getAttendeeById(attendeeId: number, token?: string): Promise<Attendee> {
-    try {
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+  async getAttendeeById(attendeeId: number, token?: string) {
+    const res = await apiClient.get<{ data: Attendee }>(
+      `/attendees/${attendeeId}`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       }
-
-      const res = await fetch(
-        `${this.baseUrl}/api/v1/attendees/${attendeeId}`,
-        {
-          headers,
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to fetch attendee (${res.status})`
-        );
-      }
-
-      const json = await res.json();
-      return json.data;
-    } catch (error) {
-      console.error("Error fetching attendee:", error);
-      throw error;
-    }
+    );
+    return res.data.data;
   }
 }
 
-// Export an instance for direct usage
 export const attendeeService = new AttendeeService();

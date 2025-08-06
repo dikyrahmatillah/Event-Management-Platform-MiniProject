@@ -121,7 +121,6 @@ export class EventController {
         });
       }
 
-      // Handle image upload if present
       const imageUrl = request.file
         ? await this.fileService.uploadPicture(request.file.path)
         : undefined;
@@ -216,6 +215,7 @@ export class EventController {
   ) => {
     try {
       const organizerId = parseInt(request.params.id);
+      const { page = 1, limit = 10 } = request.query;
 
       if (isNaN(organizerId)) {
         return response.status(400).json({
@@ -224,7 +224,12 @@ export class EventController {
         });
       }
 
-      const events = await this.eventService.getEventsByOrganizer(organizerId);
+      const events = await this.eventService.getEventsByOrganizer(
+        organizerId,
+        page as number,
+        limit as number
+      );
+
       response.status(200).json({
         success: true,
         message: "Events retrieved successfully",

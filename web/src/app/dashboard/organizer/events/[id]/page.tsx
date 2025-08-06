@@ -20,14 +20,13 @@ import {
   UsersIcon,
   TicketIcon,
   EditIcon,
-  EyeIcon,
   ArrowLeftIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
 import EventService from "@/lib/api/event-service";
-import { EventTypes } from "@/types/event.types";
+import { EventTypes } from "@/types/event.type";
 import { ticketService } from "@/lib/api/ticket-service";
 import { TicketTypes } from "@/types/ticket.types";
 

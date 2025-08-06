@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   EventFormSchema,
   eventFormSchema,
-} from "@/app/dashboard/events/schema/event-creation.schema";
+} from "@/features/events/schemas/event.schema";
 import {
   Form,
   FormField,
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/atomic/popover";
 import { Calendar } from "@/components/ui/atomic/calendar";
 import { cn } from "@/lib/utils";
-import IDRCurrencyInput from "@/app/dashboard/events/idr";
+import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 
 export default function EventForm() {
   const form = useForm<EventFormSchema>({
