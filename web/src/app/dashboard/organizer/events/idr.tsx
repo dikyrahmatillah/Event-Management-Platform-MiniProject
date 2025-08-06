@@ -1,6 +1,7 @@
+"use client";
 import { Input } from "@/components/ui/atomic/input";
 
-export default function IDRCurrencyInput({
+export default function IDR({
   value,
   onChange,
 }: {
