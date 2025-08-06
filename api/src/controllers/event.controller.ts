@@ -121,25 +121,46 @@ export class EventController {
         });
       }
 
+      const existingEvent = await this.eventService.getEventById(eventId);
+      if (!existingEvent) {
+        return response.status(404).json({
+          success: false,
+          message: "Event not found",
+        });
+      }
+
       const imageUrl = request.file
         ? await this.fileService.uploadPicture(request.file.path)
         : undefined;
 
       const body = {
         ...request.body,
-        ...(request.body.price && { price: Number(request.body.price) }),
-        ...(request.body.totalSeats && {
-          totalSeats: Number(request.body.totalSeats),
-        }),
-        ...(request.body.availableSeats && {
-          availableSeats: Number(request.body.availableSeats),
-        }),
-        ...(imageUrl && { imageUrl }),
+        eventName: String(request.body.eventName),
+        price:
+          request.body.price !== undefined && request.body.price !== ""
+            ? Number(request.body.price)
+            : undefined,
+        startDate: request.body.startDate
+          ? new Date(request.body.startDate)
+          : undefined,
+        endDate: request.body.endDate
+          ? new Date(request.body.endDate)
+          : undefined,
+        totalSeats:
+          request.body.totalSeats !== undefined &&
+          request.body.totalSeats !== ""
+            ? Number(request.body.totalSeats)
+            : undefined,
+        availableSeats:
+          request.body.availableSeats !== undefined &&
+          request.body.availableSeats !== ""
+            ? Number(request.body.availableSeats)
+            : undefined,
+        imageUrl: imageUrl || existingEvent.imageUrl,
+        organizerId: request.user.id,
       };
 
-      // Validate partial data for update
-      const partialEventSchema = eventSchema.partial();
-      const data = partialEventSchema.parse(body);
+      const data = eventSchema.parse(body);
 
       const updatedEvent = await this.eventService.updateEvent(
         eventId,

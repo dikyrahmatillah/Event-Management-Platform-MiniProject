@@ -156,7 +156,7 @@ export default function EventsManagementPage() {
                 <Input
                   type="search"
                   placeholder="Search events..."
-                  className="pl-8 w-full md:w-[200px] lg:w-[300px]"
+                  className="pl-8 w-full md:w-[150px] lg:w-[250px]"
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />

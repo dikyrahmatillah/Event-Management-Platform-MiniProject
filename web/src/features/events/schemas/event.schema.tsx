@@ -1,9 +1,11 @@
 import { z } from "zod";
 
 export const eventFormSchema = z.object({
-  eventBanner: z.custom<File>((file) => file instanceof File, {
-    message: "Image is required",
-  }),
+  eventBanner: z
+    .custom<File>((file) => file instanceof File, {
+      message: "Image is required",
+    })
+    .optional(),
   eventName: z.string().min(1, "Event name is required"),
   eventDescription: z
     .string()
