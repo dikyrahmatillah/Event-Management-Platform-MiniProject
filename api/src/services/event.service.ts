@@ -160,13 +160,17 @@ export class EventService {
     return event;
   }
 
-  async updateEvent(eventId: number, data: Partial<EventInput>, organizerId: number) {
+  async updateEvent(
+    eventId: number,
+    data: Partial<EventInput>,
+    organizerId: number
+  ) {
     const existingEvent = await prisma.event.findUnique({
       where: { id: eventId },
     });
 
     if (!existingEvent) throw new AppError("Event not found", 404);
-    
+
     // Check if user owns this event
     if (existingEvent.organizerId !== organizerId) {
       throw new AppError("Unauthorized to update this event", 403);
@@ -197,8 +201,7 @@ export class EventService {
     });
 
     if (!existingEvent) throw new AppError("Event not found", 404);
-    
-    // Check if user owns this event
+
     if (existingEvent.organizerId !== organizerId) {
       throw new AppError("Unauthorized to delete this event", 403);
     }
@@ -210,29 +213,36 @@ export class EventService {
     return { message: "Event deleted successfully" };
   }
 
-  async getEventsByOrganizer(organizerId: number, params: { page: number; limit: number }) {
-    const { page, limit } = params;
+  async getEventsByOrganizer(organizerId: number, page: number, limit: number) {
     const skip = (page - 1) * limit;
 
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        where: { organizerId },
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: "desc",
-        },
-        include: {
-          _count: {
-            select: {
-              Reviews: true,
-              Transactions: true,
-            },
+    const events = await prisma.event.findMany({
+      where: { organizerId },
+      skip,
+      take: limit,
+      orderBy: {
+        startDate: "asc",
+      },
+      include: {
+        Organizer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
           },
         },
-      }),
-      prisma.event.count({ where: { organizerId } }),
-    ]);
+        _count: {
+          select: {
+            Reviews: true,
+            Transactions: true,
+          },
+        },
+      },
+    });
+
+    const total = await prisma.event.count({
+      where: { organizerId },
+    });
 
     return {
       events,

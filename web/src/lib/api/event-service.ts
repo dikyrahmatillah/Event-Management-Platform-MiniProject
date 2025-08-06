@@ -1,94 +1,71 @@
-
-import { EventTypes } from "@/types/event.types";
+import axios from "axios";
+import { EventTypes } from "@/types/event.type";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
 
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 class EventService {
-  private async fetchWithErrorHandling(url: string, options?: RequestInit) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-        },
-        ...options,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("API Error:", error);
-      throw error;
-    }
-  }
-
   async getAllEventsByOrganizer(
     organizerId: number,
     params: { page?: number; limit?: number; category?: string } = {}
-  ): Promise<EventTypes[]> {
-    const queryParams = new URLSearchParams(params as Record<string, string>);
-    const url = `${API_BASE_URL}/api/v1/events/organizer/${organizerId}${
-      queryParams.toString() ? `?${queryParams.toString()}` : ""
-    }`;
-    const res = await this.fetchWithErrorHandling(url);
-    return res.data;
-  }
-
-  async getEventById(id: number): Promise<EventTypes> {
-    const url = `${API_BASE_URL}/api/v1/events/details/${id}`;
-    const res = await this.fetchWithErrorHandling(url);
-    return res.data;
-  }
-
-  async getAllEvents(
-    filters: { status?: string; category?: string } = {}
-  ): Promise<EventTypes[]> {
-    const params = new URLSearchParams(filters);
-    const url = `${API_BASE_URL}/api/events${
-      params.toString() ? `?${params.toString()}` : ""
-    }`;
-    return this.fetchWithErrorHandling(url);
-  }
-
-  async createEvent(eventData: Omit<EventTypes, "id">): Promise<EventTypes> {
-    const url = `${API_BASE_URL}/api/events`;
-    return this.fetchWithErrorHandling(url, {
-      method: "POST",
-      body: JSON.stringify(eventData),
+  ) {
+    const { data } = await apiClient.get(`/events/organizer/${organizerId}`, {
+      params,
     });
+    return data;
   }
 
-  async updateEvent(
-    id: number,
-    eventData: Partial<EventTypes>
-  ): Promise<EventTypes> {
-    const url = `${API_BASE_URL}/api/events/${id}`;
-    return this.fetchWithErrorHandling(url, {
-      method: "PUT",
-      body: JSON.stringify(eventData),
+  async getEventById(id: number) {
+    const { data } = await apiClient.get(`/events/details/${id}`);
+    return data;
+  }
+
+  async updateEvent(id: number, eventData: Partial<EventTypes>) {
+    const { data } = await apiClient.put<EventTypes>(
+      `/events/${id}`,
+      eventData
+    );
+    return data;
+  }
+
+  async deleteEvent(id: number) {
+    const { data } = await apiClient.delete<EventTypes>(`/events/${id}`);
+    return data;
+  }
+
+  async getAllEvents(filters: { status?: string; category?: string } = {}) {
+    const filteredParams: Record<string, string> = {};
+    if (filters.status !== undefined) filteredParams.status = filters.status;
+    if (filters.category !== undefined)
+      filteredParams.category = filters.category;
+
+    const { data } = await apiClient.get<EventTypes[]>("/events", {
+      params: filteredParams,
     });
+    return data;
   }
 
-  async deleteEvent(id: number): Promise<EventTypes> {
-    const url = `${API_BASE_URL}/api/events/${id}`;
-    return this.fetchWithErrorHandling(url, {
-      method: "DELETE",
-    });
+  async createEvent(eventData: Omit<EventTypes, "id">) {
+    const { data } = await apiClient.post<EventTypes>("/events", eventData);
+    return data;
   }
 
-  async getActiveEvents(): Promise<EventTypes[]> {
+  async getActiveEvents() {
     return this.getAllEvents({ status: "ACTIVE" });
   }
 
-  async getEventsByCategory(category: string): Promise<EventTypes[]> {
+  async getEventsByCategory(category: string) {
     return this.getAllEvents({ category });
   }
 
-  async searchEvents(query: string): Promise<EventTypes[]> {
+  async searchEvents(query: string) {
     const allEvents = await this.getAllEvents();
     return allEvents.filter(
       (event) =>
@@ -102,4 +79,3 @@ class EventService {
 export const eventService = new EventService();
 
 export default EventService;
-

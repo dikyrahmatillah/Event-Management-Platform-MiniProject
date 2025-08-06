@@ -28,7 +28,7 @@ class TransactionService {
   async createTransaction(
     transactionData: TransactionInput
   ): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/api/v1/transactions`;
+    const url = `${API_BASE_URL}/transactions`;
     return this.fetchWithErrorHandling(url, {
       method: "POST",
       body: JSON.stringify(transactionData),
@@ -36,12 +36,12 @@ class TransactionService {
   }
 
   async getTransactionById(id: number): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/api/v1/transactions/${id}`;
+    const url = `${API_BASE_URL}/transactions/${id}`;
     return this.fetchWithErrorHandling(url);
   }
 
   async getAllTransactionsByUser(userId: number): Promise<TransactionInput[]> {
-    const url = `${API_BASE_URL}/api/v1/transactions/user/${userId}`;
+    const url = `${API_BASE_URL}/transactions/user/${userId}`;
     const res = await this.fetchWithErrorHandling(url);
     return res.data;
   }
@@ -50,7 +50,7 @@ class TransactionService {
     id: number,
     transactionData: Partial<TransactionInput>
   ): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/api/v1/transactions/${id}`;
+    const url = `${API_BASE_URL}/transactions/${id}`;
     return this.fetchWithErrorHandling(url, {
       method: "PUT",
       body: JSON.stringify(transactionData),
@@ -58,7 +58,7 @@ class TransactionService {
   }
 
   async deleteTransaction(id: number): Promise<void> {
-    const url = `${API_BASE_URL}/api/v1/transactions/${id}`;
+    const url = `${API_BASE_URL}/transactions/${id}`;
     await this.fetchWithErrorHandling(url, { method: "DELETE" });
   }
 }

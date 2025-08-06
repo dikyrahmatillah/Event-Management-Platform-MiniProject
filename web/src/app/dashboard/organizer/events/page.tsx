@@ -15,7 +15,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/atomic/tabs";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
-import { EventTypes } from "@/types/event.types";
+import { EventTypes } from "@/types/event.type";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
 
@@ -36,11 +36,11 @@ export default function EventsManagementPage() {
 
       try {
         setIsLoading(true);
-        const data = await eventService.getAllEventsByOrganizer(
+        const response = await eventService.getAllEventsByOrganizer(
           Number(session.user.id)
         );
-        setEvents(data);
-        setFilteredEvents(data);
+        setEvents(response.events); // instead of setEvents(response)
+        setFilteredEvents(response.events);
       } catch (err) {
         setError("Failed to fetch events. Please try again.");
         console.error("Error fetching events:", err);
@@ -107,7 +107,7 @@ export default function EventsManagementPage() {
                 Active Events
               </p>
               <p className="text-2xl font-bold text-green-600">
-                {events.filter((e) => e.status === "ACTIVE").length}
+                {events.length}
               </p>
             </div>
           </div>

@@ -14,6 +14,7 @@ export const eventFormSchema = z.object({
   totalSeats: z.number().int().min(1, "Total seats must be at least 1"),
   startDate: z.date("Start date is required"),
   endDate: z.date("End date is required"),
+  ticketTypes: z.array(z.string()).optional(),
 });
 
 export type EventFormSchema = z.infer<typeof eventFormSchema>;

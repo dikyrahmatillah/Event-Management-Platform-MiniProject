@@ -13,6 +13,7 @@ import { generateToken, verifyToken } from "@/utils/jwt.js";
 export class AuthService {
   private emailService = new EmailService();
   private referralService = new ReferralService();
+
   async registerUser(data: RegisterInput) {
     if (await prisma.user.findUnique({ where: { email: data.email } })) {
       throw new AppError("Email already exists", 409);
@@ -59,6 +60,7 @@ export class AuthService {
     );
     return newUser;
   }
+
   async loginUser(email: string, password: string) {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -72,6 +74,7 @@ export class AuthService {
     });
     return { accessToken: token };
   }
+
   async getPublicProfile(userId: number) {
     return prisma.user.findUnique({
       where: { id: userId },
@@ -84,12 +87,14 @@ export class AuthService {
       },
     });
   }
+
   async getUserProfile(userId: number) {
     return prisma.user.findUnique({
       where: { id: userId },
       omit: { password: true, createdAt: true, updatedAt: true },
     });
   }
+
   async updateProfile(userId: number, data: UpdateProfileInput) {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new AppError("User not found", 404);
@@ -99,6 +104,7 @@ export class AuthService {
     });
     return updatedUser;
   }
+
   async changePassword(
     userId: number,
     oldPassword: string,
