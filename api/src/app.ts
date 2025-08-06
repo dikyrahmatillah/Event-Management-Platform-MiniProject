@@ -11,18 +11,19 @@ import transactionRouter from "@/routers/transaction.router.js";
 
 export class App {
   app: Application;
+
   constructor() {
     this.app = express();
     this.setupMiddlewares();
     this.setupRoutes();
     this.setupErrorHandling();
-    this.app.use(express.json());
   }
 
   setupMiddlewares() {
     this.app.use(cors({ origin: "http://localhost:3000" }));
     this.app.use(express.json());
   }
+
   setupRoutes() {
     this.app.use("/api/v1/auth", authRouter);
     this.app.use("/api/v1/events", eventRouter);
@@ -42,5 +43,3 @@ export class App {
     });
   }
 }
-
-export const app = new App();

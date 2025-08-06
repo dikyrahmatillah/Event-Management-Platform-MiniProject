@@ -1,3 +1,4 @@
+
 import { EventTypes } from "@/types/event.types";
 
 const API_BASE_URL =
@@ -101,3 +102,4 @@ class EventService {
 export const eventService = new EventService();
 
 export default EventService;
+
