@@ -28,6 +28,7 @@ import {
 import { Calendar } from "@/components/ui/atomic/calendar";
 import { cn } from "@/lib/utils";
 import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
+import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 
 export default function EventForm() {
   const form = useForm<EventFormSchema>({
@@ -269,8 +270,12 @@ export default function EventForm() {
               </FormItem>
             )}
           />
-
-          <Button type="submit">Create Event</Button>
+          <div className="flex justify-end gap-6">
+            <Button type="button" variant={"secondary"}>
+              Save Draft
+            </Button>
+            <Button type="submit">Create Event</Button>
+          </div>
         </form>
       </div>
     </Form>

@@ -81,8 +81,8 @@ export default function SearchBar() {
   return (
     <div className="">
       <div className="flex">
-        <div className="">
-          <div className="flex rounded-md gap-2 w-[400px] md:w-[680px] lg:w-[720] border p-1 bg-white">
+        <div className="sticky">
+          <div className="flex rounded-lg gap-2 w-[400px] md:w-[720px] lg:w-[720] border p-1.5 bg-white">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -130,7 +130,7 @@ export default function SearchBar() {
               type="button"
               onClick={handleSubmit(onSubmit)}
               disabled={!isValid || isSearching}
-              size="sm"
+              size="default"
               className="font-sans m-auto text-sm hover:bg-blue-100/40 cursor-pointer sm:text-base"
             >
               Search
@@ -138,7 +138,7 @@ export default function SearchBar() {
           </div>
 
           {errors.query && (
-            <div className="text-start">
+            <div className="absolute text-start">
               <p className="text-red-600 text-[10px] font-sans">
                 {errors.query.message}
               </p>
@@ -158,7 +158,7 @@ export default function SearchBar() {
               <h4 className="text-sm font-semibold mb-3 text-gray-700">
                 Search Results ({searchResults.length})
               </h4>
-              <ul className="absolute space-y-2">
+              <ul className="space-y-2">
                 {searchResults.map((result, index) => (
                   <li
                     key={index}
