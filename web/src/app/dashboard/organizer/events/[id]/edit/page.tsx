@@ -499,11 +499,7 @@ export default function EditEventPage() {
                       your event
                     </p>
                   </div>
-                  <div className="border rounded-lg p-6 text-center bg-muted/20">
-                    <p className="text-muted-foreground mb-4">
-                      Ticket types are managed separately for better
-                      organization
-                    </p>
+                  <div className="grid items-center bg-muted/20">
                     <Button
                       type="button"
                       variant="outline"
