@@ -7,6 +7,7 @@ import eventRouter from "@/routers/event.router.js";
 import ticketRouter from "@/routers/ticketType.router.js";
 import voucherRouter from "@/routers/voucher.router.js";
 import attendeeRouter from "@/routers/attendee.router.js";
+import transactionRouter from "@/routers/transaction.router.js";
 
 export class App {
   app: Application;
@@ -29,6 +30,7 @@ export class App {
     this.app.use("/api/v1/tickets", ticketRouter);
     this.app.use("/api/v1/vouchers", voucherRouter);
     this.app.use("/api/v1/attendees", attendeeRouter);
+    this.app.use("/api/v1/transactions", transactionRouter);
   }
 
   setupErrorHandling() {

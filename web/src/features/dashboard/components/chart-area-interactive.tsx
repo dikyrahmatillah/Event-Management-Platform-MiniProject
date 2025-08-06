@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import {
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  subDays,
-  isWithinInterval,
-} from "date-fns";
+import {} from "date-fns";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -41,15 +35,12 @@ import { chartData } from "@/app/dashboard/organizer/data/chart-data";
 export const description = "Event revenue and ticket sales analytics";
 
 const chartConfig = {
-  analytics: {
-    label: "Event Analytics",
-  },
   revenue: {
-    label: "Revenue (IDR)",
+    label: "Total Revenue (IDR)",
     color: "var(--primary)",
   },
   tickets: {
-    label: "Tickets Sold",
+    label: "Attendees",
     color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig;
@@ -67,7 +58,7 @@ export function ChartAreaInteractive({
 
   React.useEffect(() => {
     if (isMobile) {
-      onTimeRangeChange("last-7-days");
+      onTimeRangeChange("this-day");
     }
   }, [isMobile, onTimeRangeChange]);
 
@@ -75,42 +66,40 @@ export function ChartAreaInteractive({
     const date = new Date(item.date);
     const now = new Date();
 
-    if (timeRange === "last-7-days") {
-      const sevenDaysAgo = subDays(now, 7);
-      return isWithinInterval(date, { start: sevenDaysAgo, end: now });
+    if (timeRange === "this-day") {
+      // Only today
+      return (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate()
+      );
     } else if (timeRange === "this-month") {
-      const thisMonthStart = startOfMonth(now);
-      const thisMonthEnd = endOfMonth(now);
-      return isWithinInterval(date, {
-        start: thisMonthStart,
-        end: thisMonthEnd,
-      });
-    } else if (timeRange === "last-month") {
-      const lastMonthDate = subMonths(now, 1);
-      const lastMonthStart = startOfMonth(lastMonthDate);
-      const lastMonthEnd = endOfMonth(lastMonthDate);
-      return isWithinInterval(date, {
-        start: lastMonthStart,
-        end: lastMonthEnd,
-      });
+      // This month
+      return (
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth()
+      );
+    } else if (timeRange === "this-year") {
+      // This year
+      return date.getFullYear() === now.getFullYear();
     }
 
     return false;
   });
 
   const timeRangeLabels: Record<string, string> = {
-    "last-7-days": "Last 7 Days",
+    "this-day": "Today",
     "this-month": "This Month",
-    "last-month": "Last Month",
+    "this-year": "This Year",
   };
 
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Revenue & Ticket Sales Analytics</CardTitle>
+        <CardTitle>Total Revenue & Attendees</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Event performance for {timeRangeLabels[timeRange]}
+            Data for {timeRangeLabels[timeRange]}
           </span>
           <span className="@[540px]/card:hidden">
             {timeRangeLabels[timeRange]}
@@ -124,9 +113,9 @@ export function ChartAreaInteractive({
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="last-7-days">Last 7 Days</ToggleGroupItem>
+            <ToggleGroupItem value="this-day">Today</ToggleGroupItem>
             <ToggleGroupItem value="this-month">This Month</ToggleGroupItem>
-            <ToggleGroupItem value="last-month">Last Month</ToggleGroupItem>
+            <ToggleGroupItem value="this-year">This Year</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={onTimeRangeChange}>
             <SelectTrigger
@@ -134,17 +123,17 @@ export function ChartAreaInteractive({
               size="sm"
               aria-label="Select a value"
             >
-              <SelectValue placeholder="Last 7 days" />
+              <SelectValue placeholder="Today" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="last-7-days" className="rounded-lg">
-                Last 7 days
+              <SelectItem value="this-day" className="rounded-lg">
+                Today
               </SelectItem>
               <SelectItem value="this-month" className="rounded-lg">
                 This Month
               </SelectItem>
-              <SelectItem value="last-month" className="rounded-lg">
-                Last Month
+              <SelectItem value="this-year" className="rounded-lg">
+                This Year
               </SelectItem>
             </SelectContent>
           </Select>
@@ -213,6 +202,7 @@ export function ChartAreaInteractive({
             />
             <Area
               dataKey="tickets"
+              name="Attendees"
               type="natural"
               fill="url(#fillTickets)"
               stroke="var(--color-tickets)"
@@ -220,6 +210,7 @@ export function ChartAreaInteractive({
             />
             <Area
               dataKey="revenue"
+              name="Total Revenue"
               type="natural"
               fill="url(#fillRevenue)"
               stroke="var(--color-revenue)"

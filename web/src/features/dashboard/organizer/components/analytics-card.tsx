@@ -5,7 +5,7 @@ import { ChartAreaInteractive } from "../../components/chart-area-interactive";
 import { SectionCards } from "../../components/sections-card";
 
 export function AnalyticsCard() {
-  const [timeRange, setTimeRange] = useState("last-7-days");
+  const [timeRange, setTimeRange] = useState("this-day");
 
   return (
     <>

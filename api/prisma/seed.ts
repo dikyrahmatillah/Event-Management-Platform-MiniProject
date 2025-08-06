@@ -216,6 +216,37 @@ async function seed() {
       }
     }
 
+    const allTransactions = await prisma.transaction.findMany();
+    const allEvents = await prisma.event.findMany();
+    let attendeeCount = 0;
+    for (const user of users) {
+      const numAttendees = faker.number.int({ min: 1, max: 5 });
+      for (let i = 0; i < numAttendees; i++) {
+        const userTransactions = allTransactions.filter(
+          (t) => t.userId === user.id
+        );
+        if (userTransactions.length === 0) continue;
+        const transaction = faker.helpers.arrayElement(userTransactions);
+        const event = faker.helpers.arrayElement(allEvents);
+        await prisma.attendee.create({
+          data: {
+            transactionId: transaction.id,
+            userId: user.id,
+            eventId: event.id,
+            attendedAt: faker.datatype.boolean() ? faker.date.past() : null,
+            status: faker.helpers.arrayElement([
+              "REGISTERED",
+              "ATTENDED",
+              "NO_SHOW",
+            ]),
+            createdAt: faker.date.past(),
+          },
+        });
+        attendeeCount++;
+      }
+    }
+    console.log(`✅ Created ${attendeeCount} attendees for users`);
+
     console.log("🎉 Database seeding completed successfully!");
     console.log(`📊 Total users created: ${users.length}`);
     console.log("🔑 All users have password: pass123");
@@ -227,6 +258,7 @@ async function seed() {
       prisma.event.count(),
       prisma.ticketType.count(),
       prisma.transaction.count(),
+      prisma.attendee.count(),
     ]);
 
     console.log("\n📊 Final Summary:");
@@ -236,6 +268,7 @@ async function seed() {
     console.log(`Events: ${counts[3]}`);
     console.log(`Ticket Types: ${counts[4]}`);
     console.log(`Transactions: ${counts[5]}`);
+    console.log(`Attendees: ${counts[6]}`);
   } catch (error) {
     console.error("❌ Error during seeding:", error);
     process.exit(1);

@@ -20,6 +20,8 @@ router.post(
   upload.single("imageUrl"),
   eventController.createEvent
 );
+router.get("/organizer/:id", eventController.getAllEventsByOrganizer);
+router.get("/details/:id", eventController.getEventById);
 
 router.put("/:id", upload.single("imageUrl"), eventController.updateEvent);
 router.delete("/:id", eventController.deleteEvent);

@@ -39,11 +39,41 @@ export class AttendeeController {
         page,
         limit
       );
+
+      // Transform the data to include ticket quantity and total price
+      const transformedAttendees = attendees.map((attendee: any) => {
+        const transaction = attendee.Transaction;
+        const totalQuantity =
+          transaction?.TransactionDetails?.reduce(
+            (sum: number, detail: any) => sum + detail.quantity,
+            0
+          ) || 0;
+        const totalPrice =
+          transaction?.TransactionDetails?.reduce(
+            (sum: number, detail: any) => sum + Number(detail.totalPrice),
+            0
+          ) || 0;
+
+        return {
+          id: attendee.id,
+          userId: attendee.userId,
+          eventId: attendee.eventId,
+          transactionId: attendee.transactionId,
+          name: `${attendee.User?.firstName} ${attendee.User?.lastName || ""}`.trim(),
+          ticketQuantity: totalQuantity,
+          totalPrice: totalPrice,
+          eventName: attendee.Event?.eventName,
+          status: attendee.status,
+          attendedAt: attendee.attendedAt,
+          createdAt: attendee.createdAt,
+        };
+      });
+
       const totalAttendees = await this.attendeeService.countAttendees({
         eventId,
       });
       response.status(200).json({
-        data: attendees,
+        data: transformedAttendees,
         page: Number(page),
         limit: Number(limit),
         totalPage: Math.ceil(totalAttendees / Number(limit)),

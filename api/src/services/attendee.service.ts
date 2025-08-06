@@ -40,6 +40,31 @@ export class AttendeeService {
         eventId,
         ...(status && { status }),
       },
+      include: {
+        User: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        Transaction: {
+          include: {
+            TransactionDetails: {
+              include: {
+                TicketType: true,
+              },
+            },
+          },
+        },
+        Event: {
+          select: {
+            id: true,
+            eventName: true,
+          },
+        },
+      },
       skip,
       take,
     });
@@ -159,13 +184,15 @@ export class AttendeeService {
       eventId?: number;
       userId?: number;
       transactionId?: number;
-      status?: AttendeeInput["status"]; // Add status
+      status?: AttendeeInput["status"];
     } = {}
   ) {
     return prisma.attendee.count({ where: { ...filter } });
   }
 
   getPagination(page = 1, limit = 20) {
-    return { skip: (page - 1) * limit, take: limit };
+    const safePage = Number.isFinite(page) && page > 0 ? Number(page) : 1;
+    const safeLimit = Number.isFinite(limit) && limit > 0 ? Number(limit) : 20;
+    return { skip: (safePage - 1) * safeLimit, take: safeLimit };
   }
 }
