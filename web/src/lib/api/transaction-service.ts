@@ -47,6 +47,28 @@ class TransactionService {
     const res = await apiClient.get("/transactions/analytics", { params });
     return res.data.data;
   }
+
+  async getTransactionsWaitingConfirmation(token?: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.get("/transactions/waiting-confirmation", {
+      headers,
+    });
+    return res.data.data;
+  }
+
+  async updateTransactionStatus(
+    transactionId: number,
+    status: "DONE" | "REJECTED",
+    token?: string
+  ) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.patch(
+      `/transactions/${transactionId}/status`,
+      { newStatus: status },
+      { headers }
+    );
+    return res.data.data;
+  }
 }
 
 export const transactionService = new TransactionService();
