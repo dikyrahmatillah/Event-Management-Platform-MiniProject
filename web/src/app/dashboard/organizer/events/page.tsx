@@ -40,6 +40,7 @@ export default function EventsManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -64,17 +65,29 @@ export default function EventsManagementPage() {
   }, [session?.user?.id]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     const applyFilters = () => {
       let filtered = [...events];
 
-      if (searchTerm) {
+      if (debouncedSearchTerm) {
         filtered = filtered.filter(
           (event) =>
-            event.eventName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            event.eventName
+              .toLowerCase()
+              .includes(debouncedSearchTerm.toLowerCase()) ||
             event.description
               .toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            event.location.toLowerCase().includes(searchTerm.toLowerCase())
+              .includes(debouncedSearchTerm.toLowerCase()) ||
+            event.location
+              .toLowerCase()
+              .includes(debouncedSearchTerm.toLowerCase())
         );
       }
 
@@ -82,7 +95,7 @@ export default function EventsManagementPage() {
     };
 
     applyFilters();
-  }, [events, searchTerm]);
+  }, [events, debouncedSearchTerm]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

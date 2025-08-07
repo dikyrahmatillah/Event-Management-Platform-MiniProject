@@ -7,7 +7,6 @@ export default async function Page() {
     redirect("/auth/sign-in");
   }
 
-  // Redirect based on user role
   const userRole = session.user.role;
   if (userRole === "ORGANIZER") {
     redirect("/dashboard/organizer");
@@ -15,6 +14,5 @@ export default async function Page() {
     redirect("/dashboard/customer");
   }
 
-  // Fallback to organizer if role is undefined
   redirect("/dashboard/organizer");
 }

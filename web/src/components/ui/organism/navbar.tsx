@@ -23,9 +23,7 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
-  // Mock authentication state (replace with real auth)
   const isAuthenticated = false;
-  // const userImage = "/user.jpg"; // replace with real image from auth
 
   const toggleMenu = () => setIsOpen(!isOpen);
   return (

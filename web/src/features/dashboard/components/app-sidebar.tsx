@@ -4,7 +4,6 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 
-import { SearchForm } from "@/features/dashboard/components/search-form";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +17,8 @@ import {
   SidebarRail,
 } from "@/components/ui/atomic/sidebar";
 import Image from "next/image";
+import { Separator } from "@/components/ui/atomic/separator";
+import Link from "next/link";
 
 const organizerNavigation = [
   {
@@ -26,7 +27,6 @@ const organizerNavigation = [
     items: [
       { title: "Overview", url: "/dashboard/organizer" },
       { title: "Analytics", url: "/dashboard/organizer/analytics" },
-      { title: "Attendees", url: "/dashboard/organizer/attendees" },
     ],
   },
   {
@@ -116,7 +116,6 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ userRole, ...props }: AppSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
-  // Prefer prop if provided, else fallback to session
   const role = userRole || session?.user?.role;
 
   const getNavigationForRole = () => {
@@ -133,16 +132,19 @@ export function AppSidebar({ userRole, ...props }: AppSidebarProps) {
     <Sidebar {...props}>
       <SidebarContent>
         <SidebarHeader>
-          <div className="mb-4 flex justify-center">
-            <Image
-              src="/assets/logo.svg"
-              alt="Logo"
-              height={32}
-              width={128}
-              className="h-8"
-            />
+          <div className="mb-4 flex flex-col items-center">
+            <Link href="/">
+              <Image
+                src="/assets/logo.svg"
+                alt="Logo"
+                height={32}
+                width={128}
+                className="h-11"
+              />
+            </Link>
+
+            <Separator className="my-2 w-full" />
           </div>
-          <SearchForm />
         </SidebarHeader>
         {navMain.map((item) => (
           <SidebarGroup key={item.title}>

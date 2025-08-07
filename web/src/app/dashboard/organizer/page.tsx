@@ -16,7 +16,7 @@ export default async function Page() {
 
   return (
     <DashboardPageLayout
-      title="Organizer Dashboard"
+      title={`Welcome back, ${session.user.name || "Organizer"}`}
       description="Manage your events and view analytics"
       breadcrumbs={breadcrumbs}
     >
