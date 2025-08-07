@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { TransactionService } from "@/services/transaction.service.js";
+import { AppError } from "@/errors/app.error.js";
 
 export class TransactionController {
   private transactionService = new TransactionService();
@@ -121,6 +122,26 @@ export class TransactionController {
     }
   };
 
+  getTransactionsWaitingConfirmation = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const organizerId = request.user?.id;
+      const transactions =
+        await this.transactionService.getTransactionsWaitingConfirmation(
+          organizerId
+        );
+      return response.status(200).json({
+        message: "Waiting confirmation transactions retrieved successfully",
+        data: transactions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAnalytics = async (
     request: Request,
     response: Response,
@@ -128,7 +149,7 @@ export class TransactionController {
   ) => {
     try {
       const { timeRange } = request.query;
-      const organizerId = request.user?.id; // Assuming auth middleware sets user
+      const organizerId = request.user?.id;
 
       const analytics = await this.transactionService.getAnalytics(
         (timeRange as string) || "this-day",
