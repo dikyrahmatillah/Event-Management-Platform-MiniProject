@@ -44,3 +44,37 @@ export const transactionSchema = z.object({
 });
 
 export type TransactionInput = z.infer<typeof transactionSchema>;
+
+export interface Transaction {
+  id: number;
+  userId: number;
+  eventId: number;
+  transactionCode: string;
+  quantity: number;
+  subtotal: number;
+  discountAmount: number;
+  pointsUsed: number;
+  finalAmount: number;
+  status:
+    | "WAITING_PAYMENT"
+    | "WAITING_CONFIRMATION"
+    | "DONE"
+    | "REJECTED"
+    | "EXPIRED"
+    | "CANCELLED";
+  paymentProof?: string;
+  paymentDeadline?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  User?: {
+    id: number;
+    firstName: string;
+    lastName?: string;
+    email: string;
+  };
+  Event?: {
+    id: number;
+    eventName: string;
+    price: number;
+  };
+}
