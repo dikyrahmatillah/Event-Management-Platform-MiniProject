@@ -20,7 +20,10 @@ interface UseAnalyticsResult {
   refetch: () => void;
 }
 
-export function useAnalytics(timeRange: string): UseAnalyticsResult {
+export function useAnalytics(
+  timeRange: string,
+  organizerId?: number
+): UseAnalyticsResult {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +33,10 @@ export function useAnalytics(timeRange: string): UseAnalyticsResult {
       setLoading(true);
       setError(null);
 
-      const result = await transactionService.getAnalytics(timeRange);
+      const result = await transactionService.getAnalytics(
+        timeRange,
+        organizerId
+      );
       setData(result);
     } catch (err) {
       setError(
@@ -40,7 +46,7 @@ export function useAnalytics(timeRange: string): UseAnalyticsResult {
     } finally {
       setLoading(false);
     }
-  }, [timeRange]);
+  }, [timeRange, organizerId]);
 
   useEffect(() => {
     fetchAnalytics();

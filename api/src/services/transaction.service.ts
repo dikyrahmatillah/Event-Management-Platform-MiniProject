@@ -1,13 +1,61 @@
 import { prisma } from "@/configs/prisma.config.js";
 import { AppError } from "@/errors/app.error.js";
 import { TransactionInput } from "@/validations/transaction.validation.js";
+import { orderQueue } from "@/queues/order.queues.js";
 
 export class TransactionService {
   async createTransaction(transactionData: TransactionInput) {
-    const createdTransaction = await prisma.transaction.create({
-      data: transactionData,
+    const transaction = await prisma.$transaction(async (tx) => {
+      const event = await tx.event.findUnique({
+        where: { id: transactionData.eventId },
+      });
+
+      if (!event || event.availableSeats < transactionData.quantity) {
+        throw new AppError("Event not found or insufficient seats", 404);
+      }
+
+      const createdTransaction = await tx.transaction.create({
+        data: {
+          ...transactionData,
+          finalAmount: Number(event.price) * transactionData.quantity,
+        },
+      });
+      await tx.event.update({
+        where: { id: event.id },
+        data: { availableSeats: { decrement: transactionData.quantity } },
+      });
+
+      // Handle points usage through PointTransaction model
+      if (transactionData.pointsUsed) {
+        await tx.pointTransaction.create({
+          data: {
+            userId: transactionData.userId,
+            transactionId: createdTransaction.id,
+            pointsAmount: transactionData.pointsUsed,
+            type: "USED",
+            description: `Points used for transaction ${createdTransaction.transactionCode}`,
+          },
+        });
+
+        // Update the user's point balance
+        const userPoint = await tx.point.findFirst({
+          where: { userId: transactionData.userId },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (userPoint) {
+          await tx.point.update({
+            where: { id: userPoint.id },
+            data: {
+              pointsUsed: { increment: transactionData.pointsUsed },
+              balance: { decrement: transactionData.pointsUsed },
+            },
+          });
+        }
+      }
+
+      return createdTransaction;
     });
-    return createdTransaction;
   }
 
   async getTransactionById(transactionId: number) {
@@ -20,7 +68,7 @@ export class TransactionService {
 
   async updateTransaction(
     transactionId: number,
-    transactionData: TransactionInput
+    transactionData: Partial<TransactionInput>
   ) {
     const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
@@ -28,6 +76,72 @@ export class TransactionService {
     });
     if (!updatedTransaction) throw new AppError("Transaction not found", 404);
     return updatedTransaction;
+  }
+
+  async updateTransactionStatus(
+    transactionId: number,
+    newStatus:
+      | "WAITING_PAYMENT"
+      | "WAITING_CONFIRMATION"
+      | "DONE"
+      | "REJECTED"
+      | "EXPIRED"
+      | "CANCELLED"
+  ) {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+    });
+
+    if (!transaction) {
+      throw new AppError("Transaction not found", 404);
+    }
+
+    const transactionStatus = await prisma.$transaction(async (tx) => {
+      await tx.transaction.update({
+        where: { id: transactionId },
+        data: { status: newStatus },
+      });
+
+      if (newStatus === "REJECTED") {
+        await tx.event.update({
+          where: { id: transaction.eventId },
+          data: { availableSeats: { increment: transaction.quantity } },
+        });
+
+        // Refund points if they were used
+        if (transaction.pointsUsed > 0) {
+          await tx.pointTransaction.create({
+            data: {
+              userId: transaction.userId,
+              transactionId: transaction.id,
+              pointsAmount: transaction.pointsUsed,
+              type: "REFUNDED",
+              description: `Points refunded for rejected transaction ${transaction.transactionCode}`,
+            },
+          });
+
+          // Update the user's point balance
+          const userPoint = await tx.point.findFirst({
+            where: { userId: transaction.userId },
+            orderBy: { createdAt: "desc" },
+          });
+
+          if (userPoint) {
+            await tx.point.update({
+              where: { id: userPoint.id },
+              data: {
+                pointsUsed: { decrement: transaction.pointsUsed },
+                balance: { increment: transaction.pointsUsed },
+              },
+            });
+          }
+        }
+      }
+    });
+
+    await orderQueue.remove(transactionId.toString());
+
+    return transactionStatus;
   }
 
   async deleteTransaction(transactionId: number) {
@@ -51,7 +165,6 @@ export class TransactionService {
     const now = new Date();
     let startDate: Date;
 
-    // Calculate date range based on timeRange
     switch (timeRange) {
       case "this-day":
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -66,7 +179,6 @@ export class TransactionService {
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     }
 
-    // Build where clause
     const whereClause: any = {
       status: "DONE",
       createdAt: {
@@ -75,14 +187,12 @@ export class TransactionService {
       },
     };
 
-    // If organizerId is provided, filter by events owned by this organizer
     if (organizerId) {
       whereClause.Event = {
         organizerId: organizerId,
       };
     }
 
-    // Get total revenue
     const revenueResult = await prisma.transaction.aggregate({
       where: whereClause,
       _sum: {
@@ -90,7 +200,6 @@ export class TransactionService {
       },
     });
 
-    // Get total attendees (tickets sold)
     const attendeesResult = await prisma.attendee.aggregate({
       where: {
         createdAt: {
@@ -108,7 +217,6 @@ export class TransactionService {
       },
     });
 
-    // Get daily data for charts
     const dailyData = await prisma.transaction.groupBy({
       by: ["createdAt"],
       where: whereClause,
@@ -120,7 +228,6 @@ export class TransactionService {
       },
     });
 
-    // Process daily data
     const processedDailyData = dailyData.map((item) => ({
       date: item.createdAt.toISOString().split("T")[0],
       revenue: Number(item._sum.finalAmount || 0),

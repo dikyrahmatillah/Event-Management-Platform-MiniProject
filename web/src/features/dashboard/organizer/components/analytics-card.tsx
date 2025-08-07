@@ -1,13 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { ChartAreaInteractive } from "../../components/chart-area-interactive";
 import { SectionCards } from "../../components/sections-card";
 import { useAnalytics } from "@/hooks/use-analytics";
 
 export function AnalyticsCard() {
   const [timeRange, setTimeRange] = useState("this-day");
-  const { data, loading, error } = useAnalytics(timeRange);
+  const { data: session } = useSession();
+  const organizerId = session?.user?.id ? Number(session.user.id) : undefined;
+  const { data, loading, error } = useAnalytics(timeRange, organizerId);
 
   if (error) {
     return (
@@ -21,13 +24,12 @@ export function AnalyticsCard() {
 
   return (
     <>
-      <SectionCards timeRange={timeRange} data={data} loading={loading} />
+      <SectionCards data={data} loading={loading} />
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive
           timeRange={timeRange}
           onTimeRangeChange={setTimeRange}
-          data={data?.dailyData}
-          loading={loading}
+          organizerId={organizerId}
         />
       </div>
     </>

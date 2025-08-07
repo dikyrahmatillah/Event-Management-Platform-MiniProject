@@ -6,8 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/atomic/card";
 
-import { chartData } from "@/app/dashboard/organizer/data/chart-data";
-
 interface AnalyticsData {
   totalRevenue: number;
   totalAttendees: number;
@@ -19,50 +17,28 @@ interface AnalyticsData {
 }
 
 interface SectionCardsProps {
-  timeRange: string;
   data?: AnalyticsData | null;
   loading?: boolean;
 }
 
-export function SectionCards({ timeRange, data, loading }: SectionCardsProps) {
-  const dateNow = new Date();
-
-  let revenue = 0;
-  let ticketsSold = 0;
-
-  // Use real data if available, otherwise fallback to static data
-  if (data) {
-    revenue = data.totalRevenue;
-    ticketsSold = data.totalAttendees;
-  } else {
-    // Fallback to static data processing
-    chartData.forEach((item) => {
-      const date = new Date(item.date);
-      if (timeRange === "this-day") {
-        if (
-          date.getFullYear() === dateNow.getFullYear() &&
-          date.getMonth() === dateNow.getMonth() &&
-          date.getDate() === dateNow.getDate()
-        ) {
-          revenue += item.revenue;
-          ticketsSold += item.tickets;
-        }
-      } else if (timeRange === "this-month") {
-        if (
-          date.getFullYear() === dateNow.getFullYear() &&
-          date.getMonth() === dateNow.getMonth()
-        ) {
-          revenue += item.revenue;
-          ticketsSold += item.tickets;
-        }
-      } else if (timeRange === "this-year") {
-        if (date.getFullYear() === dateNow.getFullYear()) {
-          revenue += item.revenue;
-          ticketsSold += item.tickets;
-        }
-      }
-    });
+export function SectionCards({ data, loading }: SectionCardsProps) {
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+            </CardHeader>
+            <CardDescription className="text-2xl font-bold">--</CardDescription>
+          </Card>
+        ))}
+      </div>
+    );
   }
+
+  const revenue = data?.totalRevenue || 0;
+  const ticketsSold = data?.totalAttendees || 0;
 
   return (
     <div className="*:data-[slot=card]:from-primary/4 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2">
