@@ -27,10 +27,8 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${montserrat.variable} ${manrope.variable} antialiased`}
-      ><main>
-        {children}
-
-        </main>
+      >
+        <main className="min-h-screen">{children}</main>
         <Toaster />
       </body>
     </html>
