@@ -9,8 +9,19 @@ import {
 } from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
 import { Button } from "@/components/ui/atomic/button";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 import { Form } from "@/components/ui/atomic/form";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
@@ -32,9 +43,12 @@ export function ChangePasswordSection() {
 
   const { onChangePassword, isChanging } = useChangePassword(form);
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   return (
     <Form {...form}>
       <form
+        ref={formRef}
         onSubmit={form.handleSubmit(onChangePassword)}
         className="space-y-4 w-full"
       >
@@ -93,13 +107,38 @@ export function ChangePasswordSection() {
           )}
         />
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            disabled={isChanging}
-            className="cursor-pointer"
-          >
-            {isChanging ? "Changing..." : "Change Password"}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                disabled={isChanging}
+                className="cursor-pointer"
+              >
+                {isChanging ? "Changing..." : "Change Password"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Change Password</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to change your password?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <button
+                    type="button"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded cursor-pointer"
+                    disabled={isChanging}
+                    onClick={() => formRef.current?.requestSubmit()}
+                  >
+                    {isChanging ? "Changing..." : "Change Password"}
+                  </button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </form>
     </Form>

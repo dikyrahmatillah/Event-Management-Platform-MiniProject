@@ -19,8 +19,8 @@ function addMonths(date: Date, months: number): Date {
 }
 
 function generateIndonesianPhoneNumber(): string {
-  const number = faker.string.numeric(faker.number.int({ min: 9, max: 11 }));
-  return `+62${number}`;
+  const number = faker.string.numeric(faker.number.int({ min: 9, max: 10 }));
+  return `+628${number}`;
 }
 
 async function seed() {

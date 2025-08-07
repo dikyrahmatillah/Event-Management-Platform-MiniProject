@@ -1,6 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/atomic/button";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 import {
   Form,
   FormControl,
@@ -32,9 +43,15 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     setTimeout(() => setCopied(false), 1500);
   };
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        ref={formRef}
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -121,13 +138,38 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           )}
         />
         <div className="flex justify-end">
-          <Button
-            type="submit"
-            className="cursor-pointer"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                className="cursor-pointer"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Save Profile Changes</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to save the changes to your profile?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <button
+                    type="button"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded cursor-pointer"
+                    disabled={isSubmitting}
+                    onClick={() => formRef.current?.requestSubmit()}
+                  >
+                    {isSubmitting ? "Saving..." : "Save Changes"}
+                  </button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </form>
     </Form>

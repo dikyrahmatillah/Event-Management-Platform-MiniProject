@@ -7,6 +7,7 @@ import {
   CardDescription,
 } from "@/components/ui/atomic/card";
 import { Button } from "@/components/ui/atomic/button";
+import Navbar from "@/components/ui/organism/navbar";
 
 export default function RegisterPage() {
   return (

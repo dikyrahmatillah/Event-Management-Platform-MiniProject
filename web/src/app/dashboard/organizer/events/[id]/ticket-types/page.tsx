@@ -376,6 +376,7 @@ export default function TicketTypesPage() {
                           type="button"
                           variant="outline"
                           onClick={handleCancelForm}
+                          className="cursor-pointer"
                         >
                           Cancel
                         </Button>
@@ -407,7 +408,11 @@ export default function TicketTypesPage() {
                         onOpenChange={setUpdateDialogOpen}
                       >
                         {editingTicket && (
-                          <Button type="submit" disabled={isSubmitting}>
+                          <Button
+                            type="submit"
+                            className="cursor-pointer"
+                            disabled={isSubmitting}
+                          >
                             {isSubmitting
                               ? "Updating..."
                               : "Update Ticket Type"}
@@ -444,7 +449,11 @@ export default function TicketTypesPage() {
                         </AlertDialogContent>
                       </AlertDialog>
                       {!editingTicket && (
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="cursor-pointer"
+                        >
                           {isSubmitting ? "Creating..." : "Create Ticket Type"}
                         </Button>
                       )}

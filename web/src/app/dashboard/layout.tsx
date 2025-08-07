@@ -12,10 +12,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar />
       <AuthGuard>
-        <SidebarInset className="flex flex-1 flex-col">
-          <DashboardNavbar showSidebarTrigger={true} showBrandLogo={false} />
-          {children}
-        </SidebarInset>
+        <SidebarInset className="flex flex-1 flex-col">{children}</SidebarInset>
       </AuthGuard>
     </SidebarProvider>
   );
