@@ -8,6 +8,8 @@ import ticketRouter from "@/routers/ticketType.router.js";
 import voucherRouter from "@/routers/voucher.router.js";
 import attendeeRouter from "@/routers/attendee.router.js";
 import transactionRouter from "@/routers/transaction.router.js";
+import pointRouter from "@/routers/point.router.js";
+import couponRouter from "@/routers/coupon.router.js";
 
 export class App {
   app: Application;
@@ -31,6 +33,8 @@ export class App {
     this.app.use("/api/v1/vouchers", voucherRouter);
     this.app.use("/api/v1/attendees", attendeeRouter);
     this.app.use("/api/v1/transactions", transactionRouter);
+    this.app.use("/api/v1/points", pointRouter);
+    this.app.use("/api/v1/coupons", couponRouter);
   }
 
   setupErrorHandling() {
