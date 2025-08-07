@@ -38,7 +38,7 @@ export function SectionCards({ data, loading }: SectionCardsProps) {
   }
 
   const revenue = data?.totalRevenue || 0;
-  const ticketsSold = data?.totalAttendees || 0;
+  const attendees = data?.totalAttendees || 0;
 
   return (
     <div className="*:data-[slot=card]:from-primary/4 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2">
@@ -70,7 +70,7 @@ export function SectionCards({ data, loading }: SectionCardsProps) {
             {loading ? (
               <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
             ) : (
-              ticketsSold
+              attendees
             )}
           </CardTitle>
         </CardHeader>

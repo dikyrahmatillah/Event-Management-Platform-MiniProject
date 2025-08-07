@@ -119,13 +119,11 @@ export default function EventAttendeesPage() {
       setLoading(true);
       try {
         const eventService = new EventService();
-        // Fetch event details to get the name
         const eventData = await eventService.getEventById(eventId);
         if (eventData) {
           setEventName(eventData.eventName);
         }
 
-        // Fetch attendees using the service
         const token = session?.user?.accessToken;
         const attendeeData = await attendeeService.getAttendeesByEventId(
           eventId,

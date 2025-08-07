@@ -8,7 +8,7 @@ import { useRouter } from "next/router"; // For Pages Router
 // import { useParams } from 'next/navigation'; // For App Router
 import { EventTypes } from "@/types/event.type";
 import Image from "next/image";
-// import { eventService } from "@/lib/api/event-service";
+import { eventService } from "@/lib/api/event-service";
 import {
   HiMapPin,
   HiCalendar,

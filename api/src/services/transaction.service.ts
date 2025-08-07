@@ -135,6 +135,20 @@ export class TransactionService {
           }
         }
       }
+
+      const attendeeCount = await tx.attendee.count({
+        where: { transactionId: transaction.id },
+      });
+      if (attendeeCount === 0) {
+        const attendeesToCreate = Array.from({
+          length: transaction.quantity,
+        }).map(() => ({
+          transactionId: transaction.id,
+          userId: transaction.userId,
+          eventId: transaction.eventId,
+        }));
+        await tx.attendee.createMany({ data: attendeesToCreate });
+      }
     });
 
     await orderQueue.remove(transactionId.toString());
