@@ -133,6 +133,20 @@ export class TransactionService {
               },
             });
           }
+
+          if (transaction.discountAmount) {
+            const txCoupon = await tx.transactionCoupon.findFirst({
+              where: { transactionId: transaction.id },
+            });
+            if (txCoupon && txCoupon.couponId) {
+              await tx.coupon.update({
+                where: { id: txCoupon.couponId },
+                data: {
+                  status: "ACTIVE",
+                },
+              });
+            }
+          }
         }
       }
 

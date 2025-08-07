@@ -23,12 +23,12 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
-              <Link href="/auth/register/customer">
+              <Link href="/auth/sign-up/customer">
                 <Button className="w-full cursor-pointer" variant="default">
                   Register as Customer
                 </Button>
               </Link>
-              <Link href="/auth/register/organizer">
+              <Link href="/auth/sign-up/organizer">
                 <Button className="w-full cursor-pointer" variant="secondary">
                   Register as Organizer
                 </Button>

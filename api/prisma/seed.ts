@@ -285,6 +285,115 @@ async function seed() {
         }
       }
 
+      // --- Special transactions for customer1 (points) and customer2 (coupon) ---
+      // Only run for the first event/ticketType for demo
+      if (i === 0 && ticketTypes.length > 0) {
+        const ticketType = ticketTypes[0];
+        // Customer1 uses points
+        const customer1Points = await prisma.point.findFirst({
+          where: { userId: customers[0].id },
+        });
+        const pointsToUse = customer1Points
+          ? Math.min(customer1Points.balance, Number(ticketType.price))
+          : 0;
+        if (pointsToUse > 0) {
+          const subtotal = Number(ticketType.price);
+          const finalAmount = subtotal - pointsToUse;
+          const specialTx = await prisma.transaction.create({
+            data: {
+              userId: customers[0].id,
+              eventId: event.id,
+              transactionCode: generateUniqueCode("POINTS", 6),
+              quantity: 1,
+              subtotal,
+              discountAmount: pointsToUse,
+              pointsUsed: pointsToUse,
+              finalAmount: finalAmount < 0 ? 0 : finalAmount,
+              status: "WAITING_CONFIRMATION",
+              paymentProof: null,
+              paymentDeadline: faker.date.soon({ days: 3 }),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+          await prisma.transactionDetail.create({
+            data: {
+              transactionId: specialTx.id,
+              ticketTypeId: ticketType.id,
+              quantity: 1,
+              unitPrice: ticketType.price,
+              totalPrice: subtotal,
+            },
+          });
+          // Deduct points
+          if (customer1Points) {
+            await prisma.point.update({
+              where: { id: customer1Points.id },
+              data: {
+                pointsUsed: pointsToUse,
+                balance: customer1Points.balance - pointsToUse,
+              },
+            });
+          }
+          // Log
+          console.log(
+            `⭐ Special transaction for customer1 using points: -${pointsToUse} points`
+          );
+        }
+
+        // Customer2 uses coupon
+        const customer2Coupon = await prisma.coupon.findFirst({
+          where: { userId: customers[1].id, status: "ACTIVE" },
+        });
+        if (customer2Coupon) {
+          const subtotal = Number(ticketType.price);
+          const discount = Number(customer2Coupon.discountAmount) || 0;
+          const finalAmount = subtotal - discount;
+          const specialTx = await prisma.transaction.create({
+            data: {
+              userId: customers[1].id,
+              eventId: event.id,
+              transactionCode: generateUniqueCode("COUPON", 6),
+              quantity: 1,
+              subtotal,
+              discountAmount: discount,
+              pointsUsed: 0,
+              finalAmount: finalAmount < 0 ? 0 : finalAmount,
+              status: "WAITING_CONFIRMATION",
+              paymentProof: null,
+              paymentDeadline: faker.date.soon({ days: 3 }),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+          await prisma.transactionDetail.create({
+            data: {
+              transactionId: specialTx.id,
+              ticketTypeId: ticketType.id,
+              quantity: 1,
+              unitPrice: ticketType.price,
+              totalPrice: subtotal,
+            },
+          });
+          // Mark coupon as used
+          await prisma.coupon.update({
+            where: { id: customer2Coupon.id },
+            data: { status: "USED" },
+          });
+          // Link coupon to transaction
+          await prisma.transactionCoupon.create({
+            data: {
+              transactionId: specialTx.id,
+              couponId: customer2Coupon.id,
+              discountApplied: discount,
+            },
+          });
+          // Log
+          console.log(
+            `🎫 Special transaction for customer2 using coupon: -${discount} coupon`
+          );
+        }
+      }
       const updatedTicketTypes = await prisma.ticketType.findMany({
         where: { eventId: event.id },
       });
