@@ -47,6 +47,16 @@ import { Separator } from "@/components/ui/atomic/separator";
 import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 import EventService from "@/lib/api/event-service";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 
 export default function EditEventPage() {
   const router = useRouter();
@@ -54,6 +64,10 @@ export default function EditEventPage() {
   const { data: session } = useSession();
   const eventId = params.id as string;
   const eventService = new EventService();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] =
+    useState<EventFormSchema | null>(null);
 
   const form = useForm<EventFormSchema>({
     resolver: zodResolver(eventFormSchema),
@@ -76,6 +90,7 @@ export default function EditEventPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [removeImageDialogOpen, setRemoveImageDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!eventId) return;
@@ -121,7 +136,7 @@ export default function EditEventPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
-  const onSubmit = async (data: EventFormSchema) => {
+  const doSubmit = async (data: EventFormSchema) => {
     try {
       setIsSubmitting(true);
 
@@ -153,6 +168,11 @@ export default function EditEventPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onSubmit = (data: EventFormSchema) => {
+    setPendingFormData(data);
+    setSaveDialogOpen(true);
   };
 
   const breadcrumbs = [
@@ -219,19 +239,51 @@ export default function EditEventPage() {
                                 fill
                                 className="object-cover"
                               />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="sm"
-                                className="absolute top-2 right-2"
-                                onClick={() => {
-                                  onChange(undefined);
-                                  setImageFile(null);
-                                  setImagePreview(null);
-                                }}
+                              <AlertDialog
+                                open={removeImageDialogOpen}
+                                onOpenChange={setRemoveImageDialogOpen}
                               >
-                                Remove
-                              </Button>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="absolute top-2 right-2"
+                                  onClick={() => setRemoveImageDialogOpen(true)}
+                                >
+                                  Remove
+                                </Button>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                      Remove Image
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to remove this event
+                                      image? This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel
+                                      onClick={() =>
+                                        setRemoveImageDialogOpen(false)
+                                      }
+                                    >
+                                      Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => {
+                                        onChange(undefined);
+                                        setImageFile(null);
+                                        setImagePreview(null);
+                                        setRemoveImageDialogOpen(false);
+                                      }}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Remove
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
                             </div>
                           ) : (
                             <div className="border-2 border-dashed rounded-lg p-8 text-center border-gray-300 hover:border-gray-400 transition-colors">
@@ -537,21 +589,88 @@ export default function EditEventPage() {
                 </Button>
               </section>
               <div className="flex justify-end gap-3 pt-6 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
+                <AlertDialog
+                  open={cancelDialogOpen}
+                  onOpenChange={setCancelDialogOpen}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="min-w-[120px]"
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCancelDialogOpen(true)}
+                  >
+                    Cancel
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Cancel Editing</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to cancel? All unsaved changes
+                        will be lost.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() => setCancelDialogOpen(false)}
+                      >
+                        Continue Editing
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          setCancelDialogOpen(false);
+                          router.back();
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Yes, Cancel
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <AlertDialog
+                  open={saveDialogOpen}
+                  onOpenChange={setSaveDialogOpen}
                 >
-                  {isSubmitting ? "Saving..." : "Save Changes"}
-                  {!isSubmitting && <CheckCircle className="ml-2 h-4 w-4" />}
-                </Button>
+                  <Button
+                    type="button"
+                    disabled={isSubmitting}
+                    className="min-w-[120px]"
+                    onClick={() => setSaveDialogOpen(true)}
+                  >
+                    {isSubmitting ? "Saving..." : "Save Changes"}
+                    {!isSubmitting && <CheckCircle className="ml-2 h-4 w-4" />}
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Save Changes</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to save these changes to the
+                        event?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() => {
+                          setSaveDialogOpen(false);
+                          setPendingFormData(null);
+                        }}
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={async () => {
+                          if (pendingFormData) {
+                            await doSubmit(pendingFormData);
+                            setSaveDialogOpen(false);
+                            setPendingFormData(null);
+                          }
+                        }}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        Save
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </form>
           </Form>

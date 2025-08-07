@@ -14,6 +14,16 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/atomic/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
 import { EventTypes } from "@/types/event.type";
 import { format } from "date-fns";
@@ -228,26 +238,42 @@ function EventsTable({
   setEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
   setFilteredEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
 }) {
-  const handleDeleteEvent = async (eventId: number, eventName: string) => {
-    if (
-      !window.confirm(
-        `Are you sure you want to delete "${eventName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    eventId: number | null;
+    eventName: string;
+  }>({
+    isOpen: false,
+    eventId: null,
+    eventName: "",
+  });
+
+  const handleDeleteEvent = async () => {
+    if (!deleteDialog.eventId) return;
 
     try {
-      await eventService.deleteEvent(eventId);
-      toast.success(`Event "${eventName}" deleted successfully`);
+      await eventService.deleteEvent(deleteDialog.eventId);
+      toast.success(`Event "${deleteDialog.eventName}" deleted successfully`);
 
       // Update both events arrays
-      setEvents((prev) => prev.filter((e) => e.id !== eventId));
-      setFilteredEvents((prev) => prev.filter((e) => e.id !== eventId));
+      setEvents((prev) => prev.filter((e) => e.id !== deleteDialog.eventId));
+      setFilteredEvents((prev) =>
+        prev.filter((e) => e.id !== deleteDialog.eventId)
+      );
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setDeleteDialog({ isOpen: false, eventId: null, eventName: "" });
     }
+  };
+
+  const openDeleteDialog = (eventId: number, eventName: string) => {
+    setDeleteDialog({
+      isOpen: true,
+      eventId,
+      eventName,
+    });
   };
   if (isLoading) {
     return (
@@ -371,7 +397,7 @@ function EventsTable({
                       size="sm"
                       variant="destructive"
                       onClick={() =>
-                        handleDeleteEvent(event.id, event.eventName)
+                        openDeleteDialog(event.id, event.eventName)
                       }
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
@@ -384,6 +410,33 @@ function EventsTable({
           </tbody>
         </table>
       </div>
+
+      <AlertDialog
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) =>
+          !open &&
+          setDeleteDialog({ isOpen: false, eventId: null, eventName: "" })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteDialog.eventName}
+              &quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

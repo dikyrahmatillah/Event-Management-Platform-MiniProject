@@ -2,6 +2,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AttendeeTable } from "@/features/dashboard/attendees/pages/attendee-table.page";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 import { attendeeService } from "@/lib/api/attendee-service";
 import { Attendee } from "@/types/attendee.types";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
@@ -37,6 +47,11 @@ export default function EventAttendeesPage() {
   const [eventName, setEventName] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [updateMessage, setUpdateMessage] = useState<string>("");
+  const [statusDialog, setStatusDialog] = useState<{
+    open: boolean;
+    attendeeId: number | null;
+    newStatus: "REGISTERED" | "ATTENDED" | "NO_SHOW" | null;
+  }>({ open: false, attendeeId: null, newStatus: null });
 
   const { data: session } = useSession();
 
@@ -59,25 +74,41 @@ export default function EventAttendeesPage() {
     attendeeId: number,
     status: "REGISTERED" | "ATTENDED" | "NO_SHOW"
   ) => {
+    setStatusDialog({ open: true, attendeeId, newStatus: status });
+    return;
+  };
+
+  const confirmStatusUpdate = async () => {
+    if (!statusDialog.attendeeId || !statusDialog.newStatus) return;
     try {
       const token = session?.user?.accessToken;
-      await attendeeService.updateAttendeeStatus(attendeeId, status, token);
-
-      // Update the local state
+      await attendeeService.updateAttendeeStatus(
+        statusDialog.attendeeId,
+        statusDialog.newStatus,
+        token
+      );
       setAttendees((prev) =>
         prev.map((attendee) =>
-          attendee.id === attendeeId ? { ...attendee, status } : attendee
+          attendee.id === statusDialog.attendeeId
+            ? {
+                ...attendee,
+                status: statusDialog.newStatus as
+                  | "REGISTERED"
+                  | "ATTENDED"
+                  | "NO_SHOW"
+                  | undefined,
+              }
+            : attendee
         )
       );
-
-      // Show success message
       setUpdateMessage("Attendee status updated successfully!");
       setTimeout(() => setUpdateMessage(""), 3000);
     } catch (error) {
       console.error("Error updating attendee status:", error);
       setUpdateMessage("Error updating attendee status. Please try again.");
       setTimeout(() => setUpdateMessage(""), 3000);
-      throw error;
+    } finally {
+      setStatusDialog({ open: false, attendeeId: null, newStatus: null });
     }
   };
 
@@ -128,7 +159,6 @@ export default function EventAttendeesPage() {
       breadcrumbs={breadcrumbs}
     >
       <div className="px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto">
-        {/* Success/Error Message */}
         {updateMessage && (
           <div
             className={`mb-4 p-3 rounded-md ${
@@ -244,10 +274,49 @@ export default function EventAttendeesPage() {
                 ))}
               </div>
             ) : (
-              <AttendeeTable
-                attendees={filteredAttendees}
-                onStatusUpdate={handleStatusUpdate}
-              />
+              <>
+                <AttendeeTable
+                  attendees={filteredAttendees}
+                  onStatusUpdate={handleStatusUpdate}
+                />
+                <AlertDialog
+                  open={statusDialog.open}
+                  onOpenChange={(open) =>
+                    setStatusDialog((d) => ({ ...d, open }))
+                  }
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Change Attendee Status
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to change this attendee&apos;s
+                        status to <b>{statusDialog.newStatus}</b>?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel
+                        onClick={() =>
+                          setStatusDialog({
+                            open: false,
+                            attendeeId: null,
+                            newStatus: null,
+                          })
+                        }
+                      >
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={confirmStatusUpdate}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        Confirm
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
 
             {!loading &&

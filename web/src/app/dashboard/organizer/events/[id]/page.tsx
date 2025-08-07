@@ -31,6 +31,16 @@ import { EventTypes } from "@/types/event.type";
 import { ticketService } from "@/lib/api/ticket-service";
 import { TicketTypes } from "@/types/ticket.types";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 
 // Helper function to check valid date
 function isValidDate(date: unknown) {
@@ -49,18 +59,10 @@ export default function EventDetailPage() {
   const [ticketTypes, setTicketTypes] = useState<TicketTypes[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const handleDeleteEvent = async () => {
     if (!event) return;
-
-    if (
-      !window.confirm(
-        `Are you sure you want to delete "${event.eventName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-
     try {
       await eventService.deleteEvent(event.id);
       toast.success(`Event "${event.eventName}" deleted successfully`);
@@ -68,6 +70,8 @@ export default function EventDetailPage() {
     } catch (error) {
       console.error("Error deleting event:", error);
       toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -395,14 +399,37 @@ export default function EventDetailPage() {
                     Edit Event
                   </Button>
                 </Link>
-                <Button
-                  variant="destructive"
-                  className="flex items-center gap-2"
-                  onClick={handleDeleteEvent}
+                <AlertDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
                 >
-                  <Trash2Icon className="h-4 w-4" />
-                  Delete Event
-                </Button>
+                  <Button
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    onClick={() => setDeleteDialogOpen(true)}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                    Delete Event
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete &quot;{event?.eventName}
+                        &quot;? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteEvent}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </CardContent>

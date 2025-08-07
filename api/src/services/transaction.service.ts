@@ -86,13 +86,7 @@ export class TransactionService {
 
   async updateTransactionStatus(
     transactionId: number,
-    newStatus:
-      | "WAITING_PAYMENT"
-      | "WAITING_CONFIRMATION"
-      | "DONE"
-      | "REJECTED"
-      | "EXPIRED"
-      | "CANCELLED"
+    newStatus: "DONE" | "REJECTED"
   ) {
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
