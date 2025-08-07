@@ -70,6 +70,12 @@ export class TransactionService {
     transactionId: number,
     transactionData: Partial<TransactionInput>
   ) {
+    if (!transactionId || isNaN(transactionId)) {
+      throw new AppError("Invalid transaction ID", 400);
+    }
+    if (!transactionData || Object.keys(transactionData).length === 0) {
+      throw new AppError("No update data provided", 400);
+    }
     const updatedTransaction = await prisma.transaction.update({
       where: { id: transactionId },
       data: transactionData,
@@ -108,7 +114,6 @@ export class TransactionService {
           data: { availableSeats: { increment: transaction.quantity } },
         });
 
-        // Refund points if they were used
         if (transaction.pointsUsed > 0) {
           await tx.pointTransaction.create({
             data: {
@@ -120,7 +125,6 @@ export class TransactionService {
             },
           });
 
-          // Update the user's point balance
           const userPoint = await tx.point.findFirst({
             where: { userId: transaction.userId },
             orderBy: { createdAt: "desc" },
@@ -158,6 +162,38 @@ export class TransactionService {
     });
     if (transactions.length === 0)
       throw new AppError("No transactions found for this user", 404);
+    return transactions;
+  }
+
+  async getTransactionsWaitingConfirmation(organizerId: number) {
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        status: "WAITING_CONFIRMATION",
+        Event: {
+          organizerId: organizerId,
+        },
+      },
+      include: {
+        User: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        Event: {
+          select: {
+            id: true,
+            eventName: true,
+            price: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     return transactions;
   }
 

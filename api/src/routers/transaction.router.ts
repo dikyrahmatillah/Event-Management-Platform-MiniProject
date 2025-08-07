@@ -5,6 +5,10 @@ const router = Router();
 
 router.post("/", transactionController.createTransaction);
 router.get("/analytics", transactionController.getAnalytics);
+router.get(
+  "/waiting-confirmation",
+  transactionController.getTransactionsWaitingConfirmation
+);
 router.get("/:transactionId", transactionController.getTransactionById);
 router.put("/:transactionId", transactionController.updateTransaction);
 router.delete("/:transactionId", transactionController.deleteTransaction);
