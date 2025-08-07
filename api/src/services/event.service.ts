@@ -157,7 +157,29 @@ export class EventService {
     });
 
     if (!event) throw new AppError("Event not found", 404);
-    return event;
+
+    let totalSeats = 0;
+    let availableSeats = 0;
+
+    if (event.TicketTypes) {
+      totalSeats = event.TicketTypes.reduce(
+        (sum, ticket) => sum + (ticket.quantity ?? 0),
+        0
+      );
+      availableSeats = event.TicketTypes.reduce(
+        (sum, ticket) => sum + (ticket.availableQuantity ?? 0),
+        0
+      );
+    } else {
+      totalSeats = 0;
+      availableSeats = 0;
+    }
+
+    return {
+      ...event,
+      totalSeats,
+      availableSeats,
+    };
   }
 
   async updateEvent(

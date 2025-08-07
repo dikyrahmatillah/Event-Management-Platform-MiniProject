@@ -161,7 +161,7 @@ async function seed() {
           startDate: faker.date.future(),
           endDate: faker.date.future(),
           totalSeats: totalSeats,
-          availableSeats: totalSeats,
+          availableSeats: totalSeats, // will update after transactions
           imageUrl: faker.image.urlPicsumPhotos(),
           status,
         },
@@ -278,11 +278,24 @@ async function seed() {
             data: { availableQuantity: available },
           });
 
+          // Log transaction
           console.log(
             `🧾 Transaction for ${customer.email} on ${event.eventName} [${transactionStatus}] (qty: ${quantity}, remaining: ${available})`
           );
         }
       }
+
+      const updatedTicketTypes = await prisma.ticketType.findMany({
+        where: { eventId: event.id },
+      });
+      const updatedAvailableSeats = updatedTicketTypes.reduce(
+        (sum, t) => sum + t.availableQuantity,
+        0
+      );
+      await prisma.event.update({
+        where: { id: event.id },
+        data: { availableSeats: updatedAvailableSeats },
+      });
     }
 
     const allTransactions = await prisma.transaction.findMany();

@@ -277,7 +277,6 @@ export class TransactionService {
       });
     });
 
-    // Convert map to array and sort by date
     const processedDailyData = Array.from(dailyDataMap.entries())
       .map(([date, data]) => ({
         date,
