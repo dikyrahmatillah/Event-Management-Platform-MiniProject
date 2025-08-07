@@ -238,6 +238,7 @@ function EventsTable({
   setEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
   setFilteredEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
 }) {
+  const { data: session } = useSession();
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     eventId: number | null;
@@ -252,7 +253,10 @@ function EventsTable({
     if (!deleteDialog.eventId) return;
 
     try {
-      await eventService.deleteEvent(deleteDialog.eventId);
+      await eventService.deleteEvent(
+        deleteDialog.eventId,
+        session?.user?.accessToken
+      );
       toast.success(`Event "${deleteDialog.eventName}" deleted successfully`);
 
       // Update both events arrays

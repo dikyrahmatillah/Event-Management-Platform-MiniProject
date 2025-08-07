@@ -30,7 +30,12 @@ router.put(
   upload.single("imageUrl"),
   eventController.updateEvent
 );
-router.delete("/:id", eventController.deleteEvent);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyOrganizer,
+  eventController.deleteEvent
+);
 router.get("/organizer/my-events", eventController.getMyEvents);
 
 export default router;

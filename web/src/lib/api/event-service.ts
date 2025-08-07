@@ -64,8 +64,11 @@ class EventService {
     return data;
   }
 
-  async deleteEvent(id: number) {
-    const { data } = await apiClient.delete<EventTypes>(`/events/${id}`);
+  async deleteEvent(id: number, token?: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const { data } = await apiClient.delete<EventTypes>(`/events/${id}`, {
+      headers,
+    });
     return data;
   }
 

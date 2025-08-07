@@ -184,14 +184,7 @@ export class EventController {
     next: NextFunction
   ) => {
     try {
-      const eventId = parseInt(request.params.id);
-
-      if (isNaN(eventId)) {
-        return response.status(400).json({
-          success: false,
-          message: "Invalid event ID",
-        });
-      }
+      const eventId = Number(request.params.id);
 
       const result = await this.eventService.deleteEvent(
         eventId,
