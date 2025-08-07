@@ -10,7 +10,7 @@ export function AnalyticsCard() {
   const [timeRange, setTimeRange] = useState("this-day");
   const { data: session } = useSession();
   const organizerId = session?.user?.id ? Number(session.user.id) : undefined;
-  const { data, loading, error } = useAnalytics(timeRange, organizerId);
+  const { data, loading, error } = useAnalytics(timeRange);
 
   if (error) {
     return (

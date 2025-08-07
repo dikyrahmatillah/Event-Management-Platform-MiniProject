@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, X, Bell, Settings, LogOut, User } from "lucide-react";
+import { Menu, X, Bell, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,8 +34,7 @@ export default function DashboardNavbar({
 }: DashboardNavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { status } = useSession();
-  const { user, getUserInitials, handleSignOut, handleProfileClick } =
-    useUserActions();
+  const { user, getUserInitials, handleSignOut } = useUserActions();
 
   const isAuthenticated = status === "authenticated";
 

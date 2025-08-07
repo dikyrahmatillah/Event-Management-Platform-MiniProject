@@ -115,7 +115,7 @@ export function UnifiedAnalytics() {
 
           <TabsContent value="attendees" className="space-y-4">
             <Suspense fallback={<LoadingSpinner />}>
-              <AttendeesAnalytics timeRange={timeRange} />
+              <AttendeesAnalytics />
             </Suspense>
           </TabsContent>
 

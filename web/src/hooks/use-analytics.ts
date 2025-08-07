@@ -10,7 +10,7 @@ interface AnalyticsData {
   dailyData: Array<{
     date: string;
     revenue: number;
-    tickets: number;
+    attendee: number;
   }>;
 }
 
@@ -34,7 +34,7 @@ export function useAnalytics(timeRange: string): UseAnalyticsResult {
 
       const result = await transactionService.getAnalytics(
         timeRange,
-        session?.user?.accessToken
+        session?.user?.accessToken ?? ""
       );
       setData(result);
     } catch (err) {
@@ -45,7 +45,7 @@ export function useAnalytics(timeRange: string): UseAnalyticsResult {
     } finally {
       setLoading(false);
     }
-  }, [timeRange]);
+  }, [timeRange, session?.user?.accessToken]);
 
   useEffect(() => {
     fetchAnalytics();

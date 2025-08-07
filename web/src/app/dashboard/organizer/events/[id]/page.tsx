@@ -215,90 +215,83 @@ export default function EventDetailPage() {
             <ArrowLeftIcon className="h-4 w-4" /> Back
           </Button>
         </div>
-        {/* Main Content Card */}
         <Card className="shadow-sm">
-          {/* Event Header */}
           <CardHeader className="border-b bg-muted/30">
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <div className="flex-shrink-0">
-                  {event.imageUrl ? (
-                    <Image
-                      src={event.imageUrl}
-                      alt={event.eventName || "Event image"}
-                      width={140}
-                      height={140}
-                      className="rounded-lg object-cover border shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-[140px] h-[140px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
-                      <CalendarIcon className="h-16 w-16 text-muted-foreground" />
-                    </div>
+              <div className="flex justify-center mb-4">
+                {event.imageUrl ? (
+                  <Image
+                    src={event.imageUrl}
+                    alt={event.eventName || "Event image"}
+                    width={1200}
+                    height={320}
+                    className="rounded-lg object-cover border shadow-sm w-full h-[160px] md:h-[240px]"
+                  />
+                ) : (
+                  <div className="w-full h-[160px] md:h-[240px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
+                    <CalendarIcon className="h-16 w-16 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={
+                      event.status === "ACTIVE" ? "default" : "secondary"
+                    }
+                    className={
+                      event.status === "ACTIVE"
+                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                        : event.status === "INACTIVE"
+                        ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                        : "bg-red-100 text-red-800 hover:bg-red-200"
+                    }
+                  >
+                    {event.status || "Unknown"}
+                  </Badge>
+                  {event.category && (
+                    <Badge variant="outline" className="text-xs">
+                      {event.category}
+                    </Badge>
                   )}
                 </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge
-                      variant={
-                        event.status === "ACTIVE" ? "default" : "secondary"
-                      }
-                      className={
-                        event.status === "ACTIVE"
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : event.status === "INACTIVE"
-                          ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }
-                    >
-                      {event.status || "Unknown"}
-                    </Badge>
-                    {event.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {event.category}
-                      </Badge>
+                <CardTitle className="text-2xl md:text-3xl font-bold">
+                  {event.eventName || (
+                    <span className="italic text-muted-foreground">
+                      No name
+                    </span>
+                  )}
+                </CardTitle>
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    {isValidDate(event.startDate) ? (
+                      format(new Date(event.startDate as string), "PPP 'at' p")
+                    ) : (
+                      <span className="italic">Not specified</span>
                     )}
                   </div>
-                  <CardTitle className="text-2xl md:text-3xl font-bold">
-                    {event.eventName || (
-                      <span className="italic text-muted-foreground">
-                        No name
-                      </span>
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4" />
+                    {event.location || (
+                      <span className="italic">No location</span>
                     )}
-                  </CardTitle>
-
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      {isValidDate(event.startDate) ? (
-                        format(
-                          new Date(event.startDate as string),
-                          "PPP 'at' p"
-                        )
-                      ) : (
-                        <span className="italic">Not specified</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPinIcon className="h-4 w-4" />
-                      {event.location || (
-                        <span className="italic">No location</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UsersIcon className="h-4 w-4" />
-                      {typeof event.availableSeats === "number" &&
-                      typeof event.totalSeats === "number" ? (
-                        `${event.availableSeats} / ${event.totalSeats} seats`
-                      ) : (
-                        <span className="italic">No seats info</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <CreditCardIcon className="h-4 w-4" />
-                      {event.price
-                        ? `IDR ${parseInt(event.price).toLocaleString()}`
-                        : "Free event"}
-                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UsersIcon className="h-4 w-4" />
+                    {typeof event.availableSeats === "number" &&
+                    typeof event.totalSeats === "number" ? (
+                      `${event.availableSeats} / ${event.totalSeats} seats`
+                    ) : (
+                      <span className="italic">No seats info</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CreditCardIcon className="h-4 w-4" />
+                    {event.price
+                      ? `IDR ${parseInt(event.price).toLocaleString()}`
+                      : "Free event"}
                   </div>
                 </div>
               </div>

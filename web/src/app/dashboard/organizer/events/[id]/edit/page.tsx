@@ -66,8 +66,6 @@ export default function EditEventPage() {
   const eventService = new EventService();
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [pendingFormData, setPendingFormData] =
-    useState<EventFormSchema | null>(null);
 
   const form = useForm<EventFormSchema>({
     resolver: zodResolver(eventFormSchema),
@@ -170,8 +168,7 @@ export default function EditEventPage() {
     }
   };
 
-  const onSubmit = (data: EventFormSchema) => {
-    setPendingFormData(data);
+  const onSubmit = () => {
     setSaveDialogOpen(true);
   };
 
@@ -651,7 +648,6 @@ export default function EditEventPage() {
                       <AlertDialogCancel
                         onClick={() => {
                           setSaveDialogOpen(false);
-                          setPendingFormData(null);
                         }}
                       >
                         Cancel
@@ -663,7 +659,6 @@ export default function EditEventPage() {
                           onClick={form.handleSubmit(async (data) => {
                             await doSubmit(data);
                             setSaveDialogOpen(false);
-                            setPendingFormData(null);
                           })}
                         >
                           Save

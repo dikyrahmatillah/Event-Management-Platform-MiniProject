@@ -54,14 +54,9 @@ interface ChartAreaInteractiveProps {
 export function ChartAreaInteractive({
   timeRange,
   onTimeRangeChange,
-  organizerId,
 }: ChartAreaInteractiveProps) {
   const isMobile = useIsMobile();
-  const {
-    data: analyticsData,
-    loading,
-    error,
-  } = useAnalytics(timeRange, organizerId);
+  const { data: analyticsData, loading, error } = useAnalytics(timeRange);
 
   React.useEffect(() => {
     if (isMobile) {

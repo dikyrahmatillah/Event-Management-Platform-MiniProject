@@ -24,10 +24,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/atomic/chart";
 
-interface AttendeesAnalyticsProps {
-  timeRange: string;
-}
-
 const attendeesData = [
   { month: "Jan", registrations: 450, attendance: 380 },
   { month: "Feb", registrations: 520, attendance: 445 },
@@ -49,7 +45,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function AttendeesAnalytics({ timeRange }: AttendeesAnalyticsProps) {
+export function AttendeesAnalytics() {
   const filteredData = React.useMemo(() => {
     return attendeesData;
   }, []);

@@ -22,12 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/atomic/card";
 import { Button } from "@/components/ui/atomic/button";
-import {
-  ArrowLeftIcon,
-  UserIcon,
-  DownloadIcon,
-  FilterIcon,
-} from "lucide-react";
+import { ArrowLeftIcon, UserIcon, FilterIcon } from "lucide-react";
 import EventService from "@/lib/api/event-service";
 import { useSession } from "next-auth/react";
 import {
