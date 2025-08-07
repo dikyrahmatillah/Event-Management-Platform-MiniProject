@@ -32,14 +32,14 @@ import {
   ToggleGroupItem,
 } from "@/components/ui/atomic/toggle-group";
 
-export const description = "Event revenue and ticket sales analytics";
+export const description = "Event revenue and attendee sales analytics";
 
 const chartConfig = {
   revenue: {
     label: "Total Revenue (IDR)",
     color: "var(--primary)",
   },
-  tickets: {
+  attendees: {
     label: "Attendees",
     color: "hsl(var(--chart-2))",
   },
@@ -152,15 +152,15 @@ export function ChartAreaInteractive({
                     stopOpacity={0.1}
                   />
                 </linearGradient>
-                <linearGradient id="fillTickets" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="fillattendees" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor="var(--color-tickets)"
+                    stopColor="var(--color-attendees)"
                     stopOpacity={0.8}
                   />
                   <stop
                     offset="95%"
-                    stopColor="var(--color-tickets)"
+                    stopColor="var(--color-attendees)"
                     stopOpacity={0.1}
                   />
                 </linearGradient>
@@ -195,11 +195,11 @@ export function ChartAreaInteractive({
                 }
               />
               <Area
-                dataKey="tickets"
+                dataKey="attendee"
                 name="Attendees"
                 type="natural"
-                fill="url(#fillTickets)"
-                stroke="var(--color-tickets)"
+                fill="url(#fillattendees)"
+                stroke="var(--color-attendees)"
                 stackId="a"
               />
               <Area

@@ -244,43 +244,51 @@ export class TransactionService {
       },
     });
 
-    const attendeesResult = await prisma.attendee.aggregate({
-      where: {
-        createdAt: {
-          gte: startDate,
-          lte: now,
-        },
-        ...(organizerId && {
-          Event: {
-            organizerId: organizerId,
-          },
-        }),
-      },
+    // Count total transactions (attendee sold)
+    const attendeeResult = await prisma.transaction.aggregate({
+      where: whereClause,
       _count: {
         id: true,
       },
     });
 
-    const dailyData = await prisma.transaction.groupBy({
-      by: ["createdAt"],
+    // Get all transactions and group them manually by date
+    const transactions = await prisma.transaction.findMany({
       where: whereClause,
-      _sum: {
+      select: {
+        createdAt: true,
         finalAmount: true,
       },
-      _count: {
-        id: true,
-      },
     });
 
-    const processedDailyData = dailyData.map((item) => ({
-      date: item.createdAt.toISOString().split("T")[0],
-      revenue: Number(item._sum.finalAmount || 0),
-      tickets: item._count.id,
-    }));
+    // Group transactions by date and aggregate
+    const dailyDataMap = new Map<
+      string,
+      { revenue: number; attendee: number }
+    >();
+
+    transactions.forEach((transaction) => {
+      const dateKey = transaction.createdAt.toISOString().split("T")[0];
+      const existing = dailyDataMap.get(dateKey) || { revenue: 0, attendee: 0 };
+
+      dailyDataMap.set(dateKey, {
+        revenue: existing.revenue + Number(transaction.finalAmount || 0),
+        attendee: existing.attendee + 1,
+      });
+    });
+
+    // Convert map to array and sort by date
+    const processedDailyData = Array.from(dailyDataMap.entries())
+      .map(([date, data]) => ({
+        date,
+        revenue: data.revenue,
+        attendee: data.attendee,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     return {
       totalRevenue: Number(revenueResult._sum.finalAmount || 0),
-      totalAttendees: attendeesResult._count.id,
+      totalAttendees: attendeeResult._count.id,
       dailyData: processedDailyData,
     };
   }

@@ -74,7 +74,7 @@ async function seed() {
     customers.push(customer1);
     console.log(`✅ Created customer 1:`, customer1.email);
 
-    for (let i = 2; i <= 10; i++) {
+    for (let i = 2; i <= 5; i++) {
       const customer = await prisma.user.create({
         data: {
           email: `customer${i}@example.com`,
@@ -122,13 +122,34 @@ async function seed() {
       });
     }
 
-    const eventStatuses = ["ACTIVE", "INACTIVE", "CANCELLED"] as const;
+    // const eventStatuses = ["ACTIVE", "INACTIVE", "CANCELLED"] as const;
+    const eventStatuses = "ACTIVE" as const;
     const events = [];
 
-    for (let i = 0; i < 10; i++) {
-      const status = eventStatuses[i % eventStatuses.length];
+    for (let i = 0; i < 5; i++) {
+      // const status = eventStatuses[i % eventStatuses.length];
+      const status = eventStatuses;
       const eventPrices = [50000, 100000, 150000, 200000];
-      const seats = faker.helpers.arrayElement([50, 100, 200, 500]);
+      const ticketTypesName = [
+        "Regular",
+        "VIP",
+        "Early Bird",
+        "Group",
+        "Student",
+      ];
+      const ticketPrices = [50000, 100000, 200000];
+      // Prepare ticketType data and sum total seats
+      const ticketTypeData = ticketTypesName.map((name) => {
+        const qty = 50;
+        return {
+          typeName: name,
+          description: faker.lorem.sentence(),
+          price: faker.helpers.arrayElement(ticketPrices),
+          quantity: qty,
+          availableQuantity: qty,
+        };
+      });
+      const totalSeats = ticketTypeData.reduce((sum, t) => sum + t.quantity, 0);
       const event = await prisma.event.create({
         data: {
           organizerId: organizer.id,
@@ -139,31 +160,26 @@ async function seed() {
           price: faker.helpers.arrayElement(eventPrices),
           startDate: faker.date.future(),
           endDate: faker.date.future(),
-          totalSeats: seats,
-          availableSeats: seats,
+          totalSeats: totalSeats,
+          availableSeats: totalSeats,
           imageUrl: faker.image.urlPicsumPhotos(),
           status,
         },
       });
-      events.push(event);
-      console.log(`✅ Created event: ${event.eventName} [${status}]`);
-
+      // Create ticketTypes with eventId
       const ticketTypes = [];
-      for (let j = 0; j < 5; j++) {
-        const ticketPrices = [50000, 100000, 200000];
+      for (let j = 0; j < ticketTypeData.length; j++) {
         const ticketType = await prisma.ticketType.create({
           data: {
+            ...ticketTypeData[j],
             eventId: event.id,
-            typeName: `Ticket ${j + 1} for Event ${i + 1}`,
-            description: faker.lorem.sentence(),
-            price: faker.helpers.arrayElement(ticketPrices),
-            quantity: faker.number.int({ min: 20, max: 100 }),
-            availableQuantity: faker.number.int({ min: 0, max: 10 }),
           },
         });
         ticketTypes.push(ticketType);
         console.log(`🎟️  Ticket ${j + 1} for Event ${i + 1} created`);
       }
+      events.push(event);
+      console.log(`✅ Created event: ${event.eventName} [${status}]`);
 
       const transactionStatuses = [
         "WAITING_PAYMENT",
@@ -175,13 +191,57 @@ async function seed() {
       ] as const;
 
       for (let k = 0; k < ticketTypes.length; k++) {
-        const ticketType = ticketTypes[k];
+        let ticketType = ticketTypes[k];
+        let available = ticketType.availableQuantity;
         for (let t = 0; t < 5; t++) {
+          if (available <= 0) break;
           const transactionStatus =
             transactionStatuses[(i + k + t) % transactionStatuses.length];
           const customer = customers[(i + k + t) % customers.length];
-          const quantity = faker.number.int({ min: 1, max: 3 });
+          let quantity = faker.number.int({ min: 1, max: 3 });
+          if (quantity > available) quantity = available;
+          if (quantity <= 0) continue;
           const subtotal = Number(ticketType.price) * quantity;
+
+          // Generate realistic createdAt/paymentDeadline/updatedAt for DONE transactions
+          let createdAt = new Date();
+          let updatedAt = createdAt;
+          let paymentDeadline = faker.date.future();
+          if (transactionStatus === "DONE") {
+            const now = new Date();
+            const randomType = faker.number.int({ min: 1, max: 3 });
+            if (randomType === 1) {
+              // Today
+              createdAt = faker.date.between({
+                from: new Date(now.setHours(0, 0, 0, 0)),
+                to: new Date(),
+              });
+            } else if (randomType === 2) {
+              // This month
+              const startOfMonth = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                1
+              );
+              createdAt = faker.date.between({
+                from: startOfMonth,
+                to: new Date(),
+              });
+            } else {
+              // Last 6 months
+              const sixMonthsAgo = new Date(
+                now.getFullYear(),
+                now.getMonth() - 6,
+                now.getDate()
+              );
+              createdAt = faker.date.between({
+                from: sixMonthsAgo,
+                to: new Date(),
+              });
+            }
+            updatedAt = createdAt;
+            paymentDeadline = faker.date.soon({ days: 3, refDate: createdAt });
+          }
 
           const transaction = await prisma.transaction.create({
             data: {
@@ -195,7 +255,9 @@ async function seed() {
               finalAmount: subtotal,
               status: transactionStatus,
               paymentProof: null,
-              paymentDeadline: faker.date.future(),
+              paymentDeadline,
+              createdAt,
+              updatedAt,
             },
           });
 
@@ -209,8 +271,15 @@ async function seed() {
             },
           });
 
+          // Decrement available quantity for this ticket type
+          available -= quantity;
+          await prisma.ticketType.update({
+            where: { id: ticketType.id },
+            data: { availableQuantity: available },
+          });
+
           console.log(
-            `🧾 Transaction for ${customer.email} on ${event.eventName} [${transactionStatus}]`
+            `🧾 Transaction for ${customer.email} on ${event.eventName} [${transactionStatus}] (qty: ${quantity}, remaining: ${available})`
           );
         }
       }

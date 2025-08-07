@@ -12,7 +12,7 @@ interface AnalyticsData {
   dailyData: Array<{
     date: string;
     revenue: number;
-    tickets: number;
+    attendee: number;
   }>;
 }
 
@@ -75,7 +75,9 @@ export function SectionCards({ data, loading }: SectionCardsProps) {
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="text-muted-foreground">Across all active events</div>
+          <div className="text-muted-foreground">
+            Total attendees across all events
+          </div>
         </CardFooter>
       </Card>
     </div>
