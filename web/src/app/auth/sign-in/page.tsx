@@ -139,7 +139,7 @@ export default function SignInPage() {
                 <span className="text-gray-700">
                   Don&apos;t have an account?{" "}
                 </span>
-                <Link href="/auth/sign-up" className="hover:text-blue-500 ">
+                <Link href="/auth/register" className="hover:text-blue-500 ">
                   Sign Up
                 </Link>
               </div>

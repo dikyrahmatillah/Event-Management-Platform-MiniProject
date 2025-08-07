@@ -9,6 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 type RegisterFormProps = {
   role: "CUSTOMER" | "ORGANIZER";
@@ -17,12 +19,12 @@ type RegisterFormProps = {
 export default function RegisterForm({ role }: RegisterFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
   });
@@ -42,6 +44,7 @@ export default function RegisterForm({ role }: RegisterFormProps) {
       if (role === "CUSTOMER" && formData.referredByCode === "") {
         delete formData.referredByCode;
       }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
@@ -53,18 +56,27 @@ export default function RegisterForm({ role }: RegisterFormProps) {
       const data = await response.json();
       if (!response.ok) {
         toast.error(data.message);
+        setIsSubmitting(false);
         return;
       }
 
-      toast.success("Registration successful");
-      reset();
+      toast.success("Registration successful! Logging you in...");
+
+      await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      });
+
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
     } catch (error: unknown) {
       toast.error(
         error instanceof Error
           ? error.message
           : "An error occurred during registration"
       );
-    } finally {
       setIsSubmitting(false);
     }
   }

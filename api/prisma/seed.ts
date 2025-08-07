@@ -18,6 +18,11 @@ function addMonths(date: Date, months: number): Date {
   return result;
 }
 
+function generateIndonesianPhoneNumber(): string {
+  const number = faker.string.numeric(faker.number.int({ min: 9, max: 11 }));
+  return `+62${number}`;
+}
+
 async function seed() {
   try {
     console.log("🌱 Starting database seeding...");
@@ -46,7 +51,7 @@ async function seed() {
         password: hashedPassword,
         firstName: faker.person.firstName().slice(0, 100),
         lastName: "Organizer",
-        phone: "+1234567890",
+        phone: generateIndonesianPhoneNumber(),
         role: "ORGANIZER",
         profilePicture: faker.image.avatar(),
         referralCode: generateReferralCode(),
@@ -63,7 +68,7 @@ async function seed() {
         password: hashedPassword,
         firstName: faker.person.firstName().slice(0, 100),
         lastName: faker.person.lastName().slice(0, 100),
-        phone: faker.phone.number().slice(0, 20),
+        phone: generateIndonesianPhoneNumber(),
         role: "CUSTOMER",
         profilePicture: faker.image.avatar(),
         referralCode: generateReferralCode(),
@@ -81,7 +86,7 @@ async function seed() {
           password: hashedPassword,
           firstName: faker.person.firstName().slice(0, 100),
           lastName: faker.person.lastName().slice(0, 100),
-          phone: faker.phone.number().slice(0, 20),
+          phone: generateIndonesianPhoneNumber(),
           role: "CUSTOMER",
           profilePicture: faker.image.avatar(),
           referralCode: generateReferralCode(),
