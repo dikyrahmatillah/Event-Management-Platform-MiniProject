@@ -64,7 +64,7 @@ export default function EventDetailPage() {
   const handleDeleteEvent = async () => {
     if (!event) return;
     try {
-      await eventService.deleteEvent(event.id);
+      await eventService.deleteEvent(event.id, session?.user?.accessToken);
       toast.success(`Event "${event.eventName}" deleted successfully`);
       router.push("/dashboard/organizer/events");
     } catch (error) {

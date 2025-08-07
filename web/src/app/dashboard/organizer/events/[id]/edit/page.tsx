@@ -656,17 +656,18 @@ export default function EditEventPage() {
                       >
                         Cancel
                       </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={async () => {
-                          if (pendingFormData) {
-                            await doSubmit(pendingFormData);
+                      <AlertDialogAction asChild>
+                        <button
+                          type="button"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded"
+                          onClick={form.handleSubmit(async (data) => {
+                            await doSubmit(data);
                             setSaveDialogOpen(false);
                             setPendingFormData(null);
-                          }
-                        }}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90"
-                      >
-                        Save
+                          })}
+                        >
+                          Save
+                        </button>
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

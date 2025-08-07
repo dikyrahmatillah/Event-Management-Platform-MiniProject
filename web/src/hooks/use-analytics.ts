@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { transactionService } from "@/lib/api/transaction-service";
+import { useSession } from "next-auth/react";
 
 interface AnalyticsData {
   totalRevenue: number;
@@ -20,13 +21,11 @@ interface UseAnalyticsResult {
   refetch: () => void;
 }
 
-export function useAnalytics(
-  timeRange: string,
-  organizerId?: number
-): UseAnalyticsResult {
+export function useAnalytics(timeRange: string): UseAnalyticsResult {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session } = useSession();
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -35,7 +34,7 @@ export function useAnalytics(
 
       const result = await transactionService.getAnalytics(
         timeRange,
-        organizerId
+        session?.user?.accessToken
       );
       setData(result);
     } catch (err) {
@@ -46,7 +45,7 @@ export function useAnalytics(
     } finally {
       setLoading(false);
     }
-  }, [timeRange, organizerId]);
+  }, [timeRange]);
 
   useEffect(() => {
     fetchAnalytics();

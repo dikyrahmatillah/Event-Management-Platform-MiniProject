@@ -80,7 +80,6 @@ export default function TransactionConfirmationPage() {
         session.user.accessToken
       );
 
-      // Remove the transaction from the list since it's no longer waiting for confirmation
       setTransactions((prev) =>
         prev.filter((transaction) => transaction.id !== transactionId)
       );

@@ -258,7 +258,6 @@ export class TransactionService {
       },
     });
 
-    // Count total transactions (attendee sold)
     const attendeeResult = await prisma.transaction.aggregate({
       where: whereClause,
       _count: {
@@ -266,7 +265,6 @@ export class TransactionService {
       },
     });
 
-    // Get all transactions and group them manually by date
     const transactions = await prisma.transaction.findMany({
       where: whereClause,
       select: {
@@ -275,7 +273,6 @@ export class TransactionService {
       },
     });
 
-    // Group transactions by date and aggregate
     const dailyDataMap = new Map<
       string,
       { revenue: number; attendee: number }

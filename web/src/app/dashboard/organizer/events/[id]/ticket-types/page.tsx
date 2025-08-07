@@ -406,16 +406,13 @@ export default function TicketTypesPage() {
                         open={updateDialogOpen}
                         onOpenChange={setUpdateDialogOpen}
                       >
-                        <Button
-                          type="submit"
-                          disabled={isSubmitting}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setUpdateDialogOpen(true);
-                          }}
-                        >
-                          {isSubmitting ? "Updating..." : "Update Ticket Type"}
-                        </Button>
+                        {editingTicket && (
+                          <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting
+                              ? "Updating..."
+                              : "Update Ticket Type"}
+                          </Button>
+                        )}
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
@@ -528,7 +525,6 @@ export default function TicketTypesPage() {
                               <TrashIcon className="h-3 w-3" />
                               Delete
                             </Button>
-                            <AlertDialog />
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>

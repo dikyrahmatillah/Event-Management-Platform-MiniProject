@@ -22,33 +22,45 @@ class TransactionService {
   }
   async updateTransaction(
     transactionId: number,
-    transactionData: TransactionInput
+    transactionData: TransactionInput,
+    token: string
   ) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const res = await apiClient.put(
       `/transactions/${transactionId}`,
-      transactionData
+      transactionData,
+      { headers }
     );
     return res.data.data;
   }
 
-  async deleteTransaction(transactionId: number) {
-    const res = await apiClient.delete(`/transactions/${transactionId}`);
+  async deleteTransaction(transactionId: number, token: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.delete(`/transactions/${transactionId}`, {
+      headers,
+    });
     return res.data.data;
   }
-  async getTransactionsByUserId(userId: number) {
-    const res = await apiClient.get(`/transactions/user/${userId}`);
+  async getTransactionsByUserId(userId: number, token: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.get(`/transactions/user/${userId}`, {
+      headers,
+    });
     return res.data.data;
   }
 
-  async getAnalytics(timeRange: string = "this-day", organizerId?: number) {
-    const params: { timeRange: string; organizerId?: number } = { timeRange };
-    if (organizerId) params.organizerId = organizerId;
+  async getAnalytics(timeRange: string = "this-day", token: string) {
+    const params: { timeRange: string } = { timeRange };
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-    const res = await apiClient.get("/transactions/analytics", { params });
+    const res = await apiClient.get("/transactions/analytics", {
+      params,
+      headers,
+    });
     return res.data.data;
   }
 
-  async getTransactionsWaitingConfirmation(token?: string) {
+  async getTransactionsWaitingConfirmation(token: string) {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const res = await apiClient.get("/transactions/waiting-confirmation", {
       headers,
@@ -59,7 +71,7 @@ class TransactionService {
   async updateTransactionStatus(
     transactionId: number,
     status: "DONE" | "REJECTED",
-    token?: string
+    token: string
   ) {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const res = await apiClient.patch(

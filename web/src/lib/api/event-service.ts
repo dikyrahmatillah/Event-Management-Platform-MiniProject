@@ -35,7 +35,6 @@ class EventService {
   ) {
     const formData = new FormData();
 
-    // Append all event data fields to FormData
     Object.entries(eventData).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (value instanceof Date) {
@@ -46,27 +45,22 @@ class EventService {
       }
     });
 
-    // Only append image file if provided
     if (imageFile) {
       formData.append("imageUrl", imageFile);
     }
 
-    const { data } = await apiClient.put<EventTypes>(
-      `/events/${id}`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      }
-    );
+    const { data } = await apiClient.put(`/events/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
     return data;
   }
 
   async deleteEvent(id: number, token?: string) {
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    const { data } = await apiClient.delete<EventTypes>(`/events/${id}`, {
+    const { data } = await apiClient.delete(`/events/${id}`, {
       headers,
     });
     return data;
@@ -85,7 +79,7 @@ class EventService {
   }
 
   async createEvent(eventData: Omit<EventTypes, "id">) {
-    const { data } = await apiClient.post<EventTypes>("/events", eventData);
+    const { data } = await apiClient.post("/events", eventData);
     return data;
   }
 
