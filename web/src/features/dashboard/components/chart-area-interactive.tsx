@@ -5,6 +5,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import {} from "date-fns";
 
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAnalytics } from "@/hooks/use-analytics";
 import {
   Card,
   CardAction,
@@ -30,7 +31,6 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/atomic/toggle-group";
-import { chartData } from "@/app/dashboard/organizer/data/chart-data";
 
 export const description = "Event revenue and ticket sales analytics";
 
@@ -48,21 +48,20 @@ const chartConfig = {
 interface ChartAreaInteractiveProps {
   timeRange: string;
   onTimeRangeChange: (value: string) => void;
-  data?: Array<{
-    date: string;
-    revenue: number;
-    tickets: number;
-  }>;
-  loading?: boolean;
+  organizerId?: number;
 }
 
 export function ChartAreaInteractive({
   timeRange,
   onTimeRangeChange,
-  data,
-  loading,
+  organizerId,
 }: ChartAreaInteractiveProps) {
   const isMobile = useIsMobile();
+  const {
+    data: analyticsData,
+    loading,
+    error,
+  } = useAnalytics(timeRange, organizerId);
 
   React.useEffect(() => {
     if (isMobile) {
@@ -70,33 +69,8 @@ export function ChartAreaInteractive({
     }
   }, [isMobile, onTimeRangeChange]);
 
-  // Use real data if available, otherwise fallback to static data
-  const chartDataToUse = data || chartData;
-
-  const filteredData = chartDataToUse.filter((item) => {
-    const date = new Date(item.date);
-    const now = new Date();
-
-    if (timeRange === "this-day") {
-      // Only today
-      return (
-        date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate()
-      );
-    } else if (timeRange === "this-month") {
-      // This month
-      return (
-        date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth()
-      );
-    } else if (timeRange === "this-year") {
-      // This year
-      return date.getFullYear() === now.getFullYear();
-    }
-
-    return false;
-  });
+  // Use the dailyData from analytics
+  const chartData = analyticsData?.dailyData || [];
 
   const timeRangeLabels: Record<string, string> = {
     "this-day": "Today",
@@ -155,12 +129,16 @@ export function ChartAreaInteractive({
           <div className="aspect-auto h-[250px] w-full flex items-center justify-center">
             <div className="text-muted-foreground">Loading chart data...</div>
           </div>
+        ) : error ? (
+          <div className="aspect-auto h-[250px] w-full flex items-center justify-center">
+            <div className="text-destructive">Failed to load chart data</div>
+          </div>
         ) : (
           <ChartContainer
             config={chartConfig}
             className="aspect-auto h-[250px] w-full"
           >
-            <AreaChart data={filteredData}>
+            <AreaChart data={chartData}>
               <defs>
                 <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
                   <stop
