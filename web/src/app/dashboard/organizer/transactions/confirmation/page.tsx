@@ -136,7 +136,7 @@ export default function TransactionConfirmationPage() {
             variant="outline"
             onClick={loadTransactions}
             disabled={loading}
-            className="self-start sm:self-auto"
+            className="self-start sm:self-auto cursor-pointer"
           >
             <RefreshCwIcon
               className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
@@ -262,6 +262,7 @@ export default function TransactionConfirmationPage() {
                                     size="sm"
                                     variant="default"
                                     disabled={processingId === transaction.id}
+                                    className="cursor-pointer"
                                   >
                                     <CheckCircleIcon className="h-4 w-4 mr-1" />
                                     Approve
@@ -305,6 +306,7 @@ export default function TransactionConfirmationPage() {
                                     size="sm"
                                     variant="destructive"
                                     disabled={processingId === transaction.id}
+                                    className="cursor-pointer"
                                   >
                                     <XCircleIcon className="h-4 w-4 mr-1" />
                                     Reject

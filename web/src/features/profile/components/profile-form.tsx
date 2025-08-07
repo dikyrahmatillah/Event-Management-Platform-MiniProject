@@ -121,7 +121,11 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           )}
         />
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting}>
+          <Button
+            type="submit"
+            className="cursor-pointer"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
         </div>

@@ -208,7 +208,7 @@ export default function EditEventPage() {
         <Button
           variant="outline"
           onClick={() => router.back()}
-          className="flex items-center gap-2 mb-4"
+          className="flex items-center gap-2 mb-4 cursor-pointer"
         >
           <ArrowLeftIcon className="h-4 w-4" /> Back
         </Button>
@@ -244,7 +244,7 @@ export default function EditEventPage() {
                                   type="button"
                                   variant="destructive"
                                   size="sm"
-                                  className="absolute top-2 right-2"
+                                  className="absolute top-2 right-2 cursor-pointer"
                                   onClick={() => setRemoveImageDialogOpen(true)}
                                 >
                                   Remove
@@ -370,15 +370,26 @@ export default function EditEventPage() {
                               onValueChange={field.onChange}
                               disabled={field.disabled}
                             >
-                              <SelectTrigger className="w-full">
+                              <SelectTrigger className="w-full cursor-pointer">
                                 <SelectValue placeholder="Select status" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="ACTIVE">Active</SelectItem>
-                                <SelectItem value="INACTIVE">
+                                <SelectItem
+                                  value="ACTIVE"
+                                  className="cursor-pointer"
+                                >
+                                  Active
+                                </SelectItem>
+                                <SelectItem
+                                  value="INACTIVE"
+                                  className="cursor-pointer"
+                                >
                                   Inactive
                                 </SelectItem>
-                                <SelectItem value="CANCELLED">
+                                <SelectItem
+                                  value="CANCELLED"
+                                  className="cursor-pointer"
+                                >
                                   Cancelled
                                 </SelectItem>
                               </SelectContent>
@@ -486,7 +497,7 @@ export default function EditEventPage() {
                               <Button
                                 variant="outline"
                                 className={cn(
-                                  "w-full text-left font-normal",
+                                  "w-full text-left font-normal cursor-pointer",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -524,7 +535,7 @@ export default function EditEventPage() {
                               <Button
                                 variant="outline"
                                 className={cn(
-                                  "w-full text-left font-normal",
+                                  "w-full text-left font-normal cursor-pointer",
                                   !field.value && "text-muted-foreground"
                                 )}
                               >
@@ -564,7 +575,6 @@ export default function EditEventPage() {
                 </div>
               </section>
               <Separator />
-              {/* Ticket Types Management Link */}
               <section>
                 <h2 className="text-lg font-medium mb-1">Ticket Types</h2>
                 <p className="text-sm text-muted-foreground mb-2">
@@ -579,7 +589,7 @@ export default function EditEventPage() {
                       `/dashboard/organizer/events/${eventId}/ticket-types`
                     )
                   }
-                  className="flex items-center gap-2 bg-muted/20"
+                  className="flex items-center gap-2 bg-muted/20 cursor-pointer"
                 >
                   <TicketIcon className="h-4 w-4" />
                   Manage Ticket Types
@@ -594,6 +604,7 @@ export default function EditEventPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setCancelDialogOpen(true)}
+                    className="cursor-pointer"
                   >
                     Cancel
                   </Button>
@@ -630,7 +641,7 @@ export default function EditEventPage() {
                   <Button
                     type="button"
                     disabled={isSubmitting}
-                    className="min-w-[120px]"
+                    className="min-w-[120px] cursor-pointer"
                     onClick={() => setSaveDialogOpen(true)}
                   >
                     {isSubmitting ? "Saving..." : "Save Changes"}

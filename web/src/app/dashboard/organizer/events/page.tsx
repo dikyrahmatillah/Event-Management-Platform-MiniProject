@@ -167,10 +167,18 @@ export default function EventsManagementPage() {
         <Tabs defaultValue="all">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <TabsList>
-              <TabsTrigger value="all">All Events</TabsTrigger>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="inactive">Inactive</TabsTrigger>
-              <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+              <TabsTrigger value="all" className="cursor-pointer">
+                All Events
+              </TabsTrigger>
+              <TabsTrigger value="active" className="cursor-pointer">
+                Active
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className="cursor-pointer">
+                Inactive
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="cursor-pointer">
+                Cancelled
+              </TabsTrigger>
             </TabsList>
 
             <div className="flex items-center gap-3">
@@ -185,7 +193,7 @@ export default function EventsManagementPage() {
                 />
               </div>
               <Link href="/dashboard/organizer/events/create">
-                <Button>
+                <Button className="cursor-pointer">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Create Event
                 </Button>
@@ -416,6 +424,7 @@ function EventsTable({
                       onClick={() =>
                         openDeleteDialog(event.id, event.eventName)
                       }
+                      className="cursor-pointer"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Delete

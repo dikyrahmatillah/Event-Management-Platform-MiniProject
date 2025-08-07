@@ -64,7 +64,6 @@ export function ChartAreaInteractive({
     }
   }, [isMobile, onTimeRangeChange]);
 
-  // Use the dailyData from analytics
   const chartData = analyticsData?.dailyData || [];
 
   const timeRangeLabels: Record<string, string> = {
@@ -93,9 +92,15 @@ export function ChartAreaInteractive({
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="this-day">Today</ToggleGroupItem>
-            <ToggleGroupItem value="this-month">This Month</ToggleGroupItem>
-            <ToggleGroupItem value="this-year">This Year</ToggleGroupItem>
+            <ToggleGroupItem value="this-day" className="cursor-pointer">
+              Today
+            </ToggleGroupItem>
+            <ToggleGroupItem value="this-month" className="cursor-pointer">
+              This Month
+            </ToggleGroupItem>
+            <ToggleGroupItem value="this-year" className="cursor-pointer">
+              This Year
+            </ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={onTimeRangeChange}>
             <SelectTrigger

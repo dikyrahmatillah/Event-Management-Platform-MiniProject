@@ -82,7 +82,11 @@ export default function DashboardNavbar({
 
         <div className="hidden lg:flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="relative h-9 w-9 p-0 cursor-pointer"
+            >
               <Bell className="h-4 w-4" />
               <Badge
                 variant="destructive"
@@ -96,7 +100,7 @@ export default function DashboardNavbar({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="relative h-9 w-9 rounded-full p-0"
+                  className="relative h-9 w-9 rounded-full p-0 cursor-pointer"
                 >
                   <Avatar className="h-8 w-8">
                     <AvatarImage

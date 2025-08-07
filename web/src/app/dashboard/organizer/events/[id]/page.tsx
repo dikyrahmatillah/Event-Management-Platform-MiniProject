@@ -186,7 +186,11 @@ export default function EventDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-60 text-muted-foreground">
         <span className="text-lg font-semibold mb-2">Event not found.</span>
-        <Button variant="outline" onClick={() => router.back()}>
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="cursor-pointer"
+        >
           Back
         </Button>
       </div>
@@ -210,7 +214,7 @@ export default function EventDetailPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back
           </Button>
@@ -373,7 +377,10 @@ export default function EventDetailPage() {
                 <Link
                   href={`/dashboard/organizer/events/${event.id}/ticket-types`}
                 >
-                  <Button variant="default" className="flex items-center gap-2">
+                  <Button
+                    variant="default"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <TicketIcon className="h-4 w-4" />
                     Manage Tickets
                   </Button>
@@ -381,13 +388,19 @@ export default function EventDetailPage() {
                 <Link
                   href={`/dashboard/organizer/events/${event.id}/attendees`}
                 >
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <UsersIcon className="h-4 w-4" />
                     View Attendees
                   </Button>
                 </Link>
                 <Link href={`/dashboard/organizer/events/${event.id}/edit`}>
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <EditIcon className="h-4 w-4" />
                     Edit Event
                   </Button>
@@ -398,7 +411,7 @@ export default function EventDetailPage() {
                 >
                   <Button
                     variant="destructive"
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 cursor-pointer"
                     onClick={() => setDeleteDialogOpen(true)}
                   >
                     <Trash2Icon className="h-4 w-4" />

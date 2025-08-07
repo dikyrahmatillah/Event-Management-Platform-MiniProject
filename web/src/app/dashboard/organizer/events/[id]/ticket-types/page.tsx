@@ -258,7 +258,7 @@ export default function TicketTypesPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back to Event
           </Button>
@@ -266,7 +266,7 @@ export default function TicketTypesPage() {
           {!showForm && (
             <Button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <PlusIcon className="h-4 w-4" /> Add Ticket Type
             </Button>
@@ -505,7 +505,7 @@ export default function TicketTypesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(ticket)}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 cursor-pointer"
                           >
                             <EditIcon className="h-3 w-3" />
                             Edit
@@ -520,7 +520,7 @@ export default function TicketTypesPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleDelete(ticket.id)}
-                              className="flex items-center gap-1 text-destructive hover:text-destructive"
+                              className="flex items-center gap-1 text-destructive hover:text-destructive cursor-pointer"
                             >
                               <TrashIcon className="h-3 w-3" />
                               Delete

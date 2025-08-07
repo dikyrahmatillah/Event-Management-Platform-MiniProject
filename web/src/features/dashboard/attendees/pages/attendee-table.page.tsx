@@ -186,7 +186,7 @@ export function AttendeeTable({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-7 w-7 p-0 text-green-600 hover:bg-green-50"
+                                className="h-7 w-7 p-0 text-green-600 hover:bg-green-50 cursor-pointer"
                                 onClick={() =>
                                   handleStatusChange(attendee.id, "ATTENDED")
                                 }
@@ -209,7 +209,7 @@ export function AttendeeTable({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                className="h-7 w-7 p-0 text-red-600 hover:bg-red-50"
+                                className="h-7 w-7 p-0 text-red-600 hover:bg-red-50 cursor-pointer"
                                 onClick={() =>
                                   handleStatusChange(attendee.id, "NO_SHOW")
                                 }

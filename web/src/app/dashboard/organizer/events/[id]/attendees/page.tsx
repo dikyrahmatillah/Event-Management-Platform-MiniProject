@@ -50,13 +50,11 @@ export default function EventAttendeesPage() {
 
   const { data: session } = useSession();
 
-  // Filter attendees based on status
   const filteredAttendees =
     statusFilter === "ALL"
       ? attendees
       : attendees.filter((attendee) => attendee.status === statusFilter);
 
-  // Calculate statistics
   const stats = {
     total: attendees.length,
     registered: attendees.filter((a) => a.status === "REGISTERED" || !a.status)
@@ -168,7 +166,7 @@ export default function EventAttendeesPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="flex items-center gap-2 self-start"
+            className="flex items-center gap-2 self-start cursor-pointer"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back to Event
           </Button>
@@ -177,14 +175,22 @@ export default function EventAttendeesPage() {
             <div className="flex items-center gap-2">
               <FilterIcon className="h-4 w-4" />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-36 sm:w-40">
+                <SelectTrigger className="w-36 sm:w-40 cursor-pointer">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">All Status</SelectItem>
-                  <SelectItem value="REGISTERED">Registered</SelectItem>
-                  <SelectItem value="ATTENDED">Attended</SelectItem>
-                  <SelectItem value="NO_SHOW">No Show</SelectItem>
+                  <SelectItem value="ALL" className="cursor-pointer">
+                    All Status
+                  </SelectItem>
+                  <SelectItem value="REGISTERED" className="cursor-pointer">
+                    Registered
+                  </SelectItem>
+                  <SelectItem value="ATTENDED" className="cursor-pointer">
+                    Attended
+                  </SelectItem>
+                  <SelectItem value="NO_SHOW" className="cursor-pointer">
+                    No Show
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -312,29 +318,12 @@ export default function EventAttendeesPage() {
               </>
             )}
 
-            {!loading &&
-              filteredAttendees.length === 0 &&
-              attendees.length > 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p className="text-sm sm:text-base">
-                    No attendees found with the selected status filter.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={() => setStatusFilter("ALL")}
-                    className="mt-2"
-                  >
-                    Clear Filter
-                  </Button>
-                </div>
-              )}
-
             {!loading && attendees.length === 0 && (
               <div className="flex justify-center mt-4">
                 <Button
                   variant="outline"
                   onClick={() => window.location.reload()}
-                  className="text-sm"
+                  className="text-sm cursor-pointer"
                 >
                   Refresh List
                 </Button>
