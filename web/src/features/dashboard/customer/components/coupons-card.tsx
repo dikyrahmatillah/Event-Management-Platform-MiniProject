@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import {
   Card,
@@ -100,10 +101,10 @@ export function CouponsCard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full mt-2"
+                    className="w-full mt-2 cursor-pointer"
                     onClick={() => {
                       navigator.clipboard.writeText(coupon.code);
-                      // You could add toast notification here using a toast library
+                      toast.success("Coupon code copied!");
                     }}
                   >
                     Copy Code

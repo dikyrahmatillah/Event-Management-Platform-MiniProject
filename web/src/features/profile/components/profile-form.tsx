@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
+import { toast } from "sonner";
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/atomic/button";
 import {
@@ -35,12 +36,9 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
   isSubmitting,
   onSubmit,
 }) => {
-  const [copied, setCopied] = useState(false);
-
   const handleCopy = (value: string) => {
     navigator.clipboard.writeText(value);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    toast.success("Referral code copied!");
   };
 
   const formRef = useRef<HTMLFormElement>(null);
@@ -122,7 +120,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                   />
                   <button
                     type="button"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground cursor-pointer"
                     onClick={() => handleCopy(field.value ?? "")}
                     tabIndex={-1}
                   >
@@ -131,9 +129,6 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
                 </div>
               </FormControl>
               <FormMessage />
-              {copied && (
-                <span className="text-xs text-green-600">Copied!</span>
-              )}
             </FormItem>
           )}
         />

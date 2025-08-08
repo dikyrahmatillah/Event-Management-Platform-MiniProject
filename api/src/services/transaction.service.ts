@@ -103,10 +103,26 @@ export class TransactionService {
       });
 
       if (newStatus === "REJECTED") {
-        await tx.event.update({
-          where: { id: transaction.eventId },
-          data: { availableSeats: { increment: transaction.quantity } },
+        // Get transaction details to update the specific ticket types
+        const transactionDetails = await tx.transactionDetail.findMany({
+          where: { transactionId: transaction.id },
         });
+
+        // If no transaction details exist (old system), fall back to event update
+        if (transactionDetails.length === 0) {
+          await tx.event.update({
+            where: { id: transaction.eventId },
+            data: { availableSeats: { increment: transaction.quantity } },
+          });
+        } else {
+          // Update specific ticket types
+          for (const detail of transactionDetails) {
+            await tx.ticketType.update({
+              where: { id: detail.ticketTypeId },
+              data: { availableQuantity: { increment: detail.quantity } },
+            });
+          }
+        }
 
         if (transaction.pointsUsed > 0) {
           await tx.pointTransaction.create({
@@ -130,22 +146,24 @@ export class TransactionService {
               data: {
                 pointsUsed: { decrement: transaction.pointsUsed },
                 balance: { increment: transaction.pointsUsed },
+                description: `Points refunded for transaction ${transaction.transactionCode}`,
               },
             });
           }
+        }
 
-          if (transaction.discountAmount) {
-            const txCoupon = await tx.transactionCoupon.findFirst({
-              where: { transactionId: transaction.id },
+        // Restore coupon status if a coupon was used
+        if (Number(transaction.discountAmount) > 0) {
+          const txCoupon = await tx.transactionCoupon.findFirst({
+            where: { transactionId: transaction.id },
+          });
+          if (txCoupon && txCoupon.couponId) {
+            await tx.coupon.update({
+              where: { id: txCoupon.couponId },
+              data: {
+                status: "ACTIVE",
+              },
             });
-            if (txCoupon && txCoupon.couponId) {
-              await tx.coupon.update({
-                where: { id: txCoupon.couponId },
-                data: {
-                  status: "ACTIVE",
-                },
-              });
-            }
           }
         }
       }

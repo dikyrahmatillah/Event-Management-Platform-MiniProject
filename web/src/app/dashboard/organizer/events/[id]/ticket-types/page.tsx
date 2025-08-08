@@ -38,6 +38,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialog,
+  AlertDialogTrigger,
 } from "@/components/ui/atomic/alert-dialog";
 import { EventTypes } from "@/types/event.type";
 import { TicketTypes } from "@/types/ticket.types";
@@ -449,13 +450,41 @@ export default function TicketTypesPage() {
                         </AlertDialogContent>
                       </AlertDialog>
                       {!editingTicket && (
-                        <Button
-                          type="submit"
-                          disabled={isSubmitting}
-                          className="cursor-pointer"
-                        >
-                          {isSubmitting ? "Creating..." : "Create Ticket Type"}
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              type="button"
+                              disabled={isSubmitting}
+                              className="cursor-pointer"
+                            >
+                              {isSubmitting
+                                ? "Creating..."
+                                : "Create Ticket Type"}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Create Ticket Type
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to create this ticket
+                                type?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => {
+                                  form.handleSubmit(onSubmit)();
+                                }}
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                              >
+                                Create
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </div>
                   </form>

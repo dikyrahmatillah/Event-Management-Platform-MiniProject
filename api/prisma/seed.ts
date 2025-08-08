@@ -54,7 +54,6 @@ async function seed() {
         phone: generateIndonesianPhoneNumber(),
         role: "ORGANIZER",
         profilePicture: faker.image.avatar(),
-        referralCode: generateReferralCode(),
       },
     });
     users.push(organizer);
@@ -119,7 +118,7 @@ async function seed() {
           pointsEarned: referralBonus,
           pointsUsed: 0,
           balance: referralBonus,
-          description: "Referral bonus",
+          description: `Referral bonus from referring ${customer.email}`,
           expiresAt: expiresIn3Months,
           createdAt: now,
           updatedAt: now,
@@ -132,18 +131,10 @@ async function seed() {
     const events = [];
 
     for (let i = 0; i < 5; i++) {
-      // const status = eventStatuses[i % eventStatuses.length];
       const status = eventStatuses;
       const eventPrices = [50000, 100000, 150000, 200000];
-      const ticketTypesName = [
-        "Regular",
-        "VIP",
-        "Early Bird",
-        "Group",
-        "Student",
-      ];
+      const ticketTypesName = ["Regular", "VIP", "Early Bird"];
       const ticketPrices = [50000, 100000, 200000];
-      // Prepare ticketType data and sum total seats
       const ticketTypeData = ticketTypesName.map((name) => {
         const qty = 50;
         return {
@@ -158,7 +149,7 @@ async function seed() {
       const event = await prisma.event.create({
         data: {
           organizerId: organizer.id,
-          eventName: `Event ${i + 1} (${status})`,
+          eventName: faker.lorem.words(3),
           description: faker.lorem.paragraph(),
           category: faker.commerce.department(),
           location: faker.location.city(),
@@ -166,8 +157,8 @@ async function seed() {
           startDate: faker.date.future(),
           endDate: faker.date.future(),
           totalSeats: totalSeats,
-          availableSeats: totalSeats, // will update after transactions
-          imageUrl: faker.image.urlPicsumPhotos(),
+          availableSeats: totalSeats,
+          imageUrl: `https://picsum.photos/seed/event${i}/600/400`,
           status,
         },
       });
@@ -208,7 +199,6 @@ async function seed() {
           if (quantity <= 0) continue;
           const subtotal = Number(ticketType.price) * quantity;
 
-          // Generate realistic createdAt/paymentDeadline/updatedAt for DONE transactions
           let createdAt = new Date();
           let updatedAt = createdAt;
           let paymentDeadline = faker.date.future();
@@ -259,7 +249,10 @@ async function seed() {
               pointsUsed: 0,
               finalAmount: subtotal,
               status: transactionStatus,
-              paymentProof: null,
+              paymentProof:
+                transactionStatus === "WAITING_CONFIRMATION"
+                  ? `https://picsum.photos/seed/payment${i}${k}${t}/600/800`
+                  : null,
               paymentDeadline,
               createdAt,
               updatedAt,
@@ -290,8 +283,6 @@ async function seed() {
         }
       }
 
-      // --- Special transactions for customer1 (points) and customer2 (coupon) ---
-      // Only run for the first event/ticketType for demo
       if (i === 0 && ticketTypes.length > 0) {
         const ticketType = ticketTypes[0];
         // Customer1 uses points
@@ -315,7 +306,7 @@ async function seed() {
               pointsUsed: pointsToUse,
               finalAmount: finalAmount < 0 ? 0 : finalAmount,
               status: "WAITING_CONFIRMATION",
-              paymentProof: null,
+              paymentProof: `https://picsum.photos/seed/pointstx${i}/600/800`,
               paymentDeadline: faker.date.soon({ days: 3 }),
               createdAt: new Date(),
               updatedAt: new Date(),
@@ -365,7 +356,7 @@ async function seed() {
               pointsUsed: 0,
               finalAmount: finalAmount < 0 ? 0 : finalAmount,
               status: "WAITING_CONFIRMATION",
-              paymentProof: null,
+              paymentProof: `https://picsum.photos/seed/coupontx${i}/600/800`,
               paymentDeadline: faker.date.soon({ days: 3 }),
               createdAt: new Date(),
               updatedAt: new Date(),

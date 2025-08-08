@@ -41,7 +41,11 @@ export default function ForgotPasswordPage() {
                     {...register("email")}
                   />
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full cursor-pointer"
+                >
                   {isLoading ? "Sending..." : "Send Reset Link"}
                 </Button>
                 {errors.email && (

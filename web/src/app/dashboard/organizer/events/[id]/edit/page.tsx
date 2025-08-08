@@ -574,27 +574,7 @@ export default function EditEventPage() {
                   />
                 </div>
               </section>
-              <Separator />
-              <section>
-                <h2 className="text-lg font-medium mb-1">Ticket Types</h2>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Manage different ticket types, pricing, and capacity for your
-                  event
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/organizer/events/${eventId}/ticket-types`
-                    )
-                  }
-                  className="flex items-center gap-2 bg-muted/20 cursor-pointer"
-                >
-                  <TicketIcon className="h-4 w-4" />
-                  Manage Ticket Types
-                </Button>
-              </section>
+
               <div className="flex justify-end gap-3 pt-6 border-t">
                 <AlertDialog
                   open={cancelDialogOpen}

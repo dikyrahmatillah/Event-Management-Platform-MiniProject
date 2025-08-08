@@ -237,6 +237,7 @@ export default function TransactionConfirmationPage() {
                             {transaction.paymentProof ? (
                               <Button
                                 variant="outline"
+                                className="cursor-pointer"
                                 size="sm"
                                 onClick={() =>
                                   window.open(

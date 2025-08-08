@@ -11,13 +11,20 @@ export class ReferralService {
       Date.now() + 1000 * 60 * 60 * 24 * 30 * 3
     );
 
+    const newUser = await prisma.user.findUnique({
+      where: { id: newUserId },
+      select: { firstName: true },
+    });
+
+    const newUserFirstName = newUser?.firstName || "someone";
+
     await prisma.$transaction(async (tx) => {
       await tx.point.create({
         data: {
           userId: referredUserId,
           pointsEarned: 10000,
           balance: 10000,
-          description: `Referral bonus from ${referralCode}`,
+          description: `Referral bonus from referring ${newUser?.firstName}`,
           expiresAt: threeMonthsFromNow,
         },
       });
