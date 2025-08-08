@@ -48,13 +48,13 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function RevenueAnalytics({ timeRange }: RevenueAnalyticsProps) {
+export function RevenueAnalytics({}: RevenueAnalyticsProps) {
   // Filter data based on timeRange - you can implement this logic
   const filteredData = React.useMemo(() => {
     // This is where you'd filter based on timeRange
     // For now, returning all data
     return revenueData;
-  }, [timeRange]);
+  }, []);
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

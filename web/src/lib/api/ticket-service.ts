@@ -2,6 +2,7 @@ import axios from "axios";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
@@ -30,7 +31,7 @@ class TicketService {
       `/tickets/${eventId}`,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
     );
-    return res.data;
+    return res.data.data;
   }
 
   async createTicketType(ticketData: CreateTicketTypeData, token?: string) {
@@ -39,7 +40,7 @@ class TicketService {
       ticketData,
       token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
     );
-    return res.data;
+    return res.data.data;
   }
 
   async updateTicketType(

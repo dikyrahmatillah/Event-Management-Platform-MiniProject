@@ -29,7 +29,17 @@ import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 import EventService from "@/lib/api/event-service";
 import { ticketService } from "@/lib/api/ticket-service";
 import { toast } from "sonner";
-import { EventTypes } from "@/types/event.types";
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialog,
+} from "@/components/ui/atomic/alert-dialog";
+import { EventTypes } from "@/types/event.type";
 import { TicketTypes } from "@/types/ticket.types";
 import { useSession } from "next-auth/react";
 
@@ -55,6 +65,14 @@ export default function TicketTypesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingTicket, setEditingTicket] = useState<TicketTypes | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    ticketId: number | null;
+  }>({ open: false, ticketId: null });
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [pendingFormData, setPendingFormData] =
+    useState<TicketTypeFormData | null>(null);
 
   const form = useForm<TicketTypeFormData>({
     resolver: zodResolver(ticketTypeSchema),
@@ -91,7 +109,7 @@ export default function TicketTypesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);
 
-  const onSubmit = async (data: TicketTypeFormData) => {
+  const doSubmit = async (data: TicketTypeFormData) => {
     try {
       setIsSubmitting(true);
 
@@ -136,6 +154,15 @@ export default function TicketTypesPage() {
     }
   };
 
+  const onSubmit = (data: TicketTypeFormData) => {
+    if (editingTicket) {
+      setPendingFormData(data);
+      setUpdateDialogOpen(true);
+    } else {
+      doSubmit(data);
+    }
+  };
+
   const handleEdit = (ticket: TicketTypes) => {
     setEditingTicket(ticket);
     form.reset({
@@ -150,31 +177,42 @@ export default function TicketTypesPage() {
     setShowForm(true);
   };
 
-  const handleDelete = async (ticketId: number) => {
-    if (!confirm("Are you sure you want to delete this ticket type?")) return;
+  const handleDelete = (ticketId: number) => {
+    setDeleteDialog({ open: true, ticketId });
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteDialog.ticketId) return;
     try {
+      setIsSubmitting(true);
       await ticketService.deleteTicketType(
-        ticketId,
+        deleteDialog.ticketId,
         session?.user?.accessToken
       );
       toast.success("Ticket type deleted successfully");
-
       const updatedTickets = await ticketService.getTicketsByEventId(
         Number(eventId),
         session?.user?.accessToken
       );
       setTicketTypes(updatedTickets);
+      setDeleteDialog({ open: false, ticketId: null });
     } catch (error) {
       console.error("Failed to delete ticket type:", error);
       toast.error("Failed to delete ticket type. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCancelForm = () => {
+    setCancelDialogOpen(true);
+  };
+
+  const confirmCancelForm = () => {
     form.reset();
     setEditingTicket(null);
     setShowForm(false);
+    setCancelDialogOpen(false);
   };
 
   const breadcrumbs = [
@@ -220,7 +258,7 @@ export default function TicketTypesPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back to Event
           </Button>
@@ -228,7 +266,7 @@ export default function TicketTypesPage() {
           {!showForm && (
             <Button
               onClick={() => setShowForm(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <PlusIcon className="h-4 w-4" /> Add Ticket Type
             </Button>
@@ -330,22 +368,95 @@ export default function TicketTypesPage() {
                     />
 
                     <div className="flex justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleCancelForm}
+                      <AlertDialog
+                        open={cancelDialogOpen}
+                        onOpenChange={setCancelDialogOpen}
                       >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting
-                          ? editingTicket
-                            ? "Updating..."
-                            : "Creating..."
-                          : editingTicket
-                          ? "Update Ticket Type"
-                          : "Create Ticket Type"}
-                      </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelForm}
+                          className="cursor-pointer"
+                        >
+                          Cancel
+                        </Button>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Cancel</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to cancel? All unsaved
+                              changes will be lost.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel
+                              onClick={() => setCancelDialogOpen(false)}
+                            >
+                              Continue Editing
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={confirmCancelForm}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Yes, Cancel
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <AlertDialog
+                        open={updateDialogOpen}
+                        onOpenChange={setUpdateDialogOpen}
+                      >
+                        {editingTicket && (
+                          <Button
+                            type="submit"
+                            className="cursor-pointer"
+                            disabled={isSubmitting}
+                          >
+                            {isSubmitting
+                              ? "Updating..."
+                              : "Update Ticket Type"}
+                          </Button>
+                        )}
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Update Ticket Type
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to update this ticket type?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel
+                              onClick={() => setUpdateDialogOpen(false)}
+                            >
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={async () => {
+                                if (pendingFormData) {
+                                  await doSubmit(pendingFormData);
+                                  setUpdateDialogOpen(false);
+                                  setPendingFormData(null);
+                                }
+                              }}
+                              className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            >
+                              Update
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      {!editingTicket && (
+                        <Button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="cursor-pointer"
+                        >
+                          {isSubmitting ? "Creating..." : "Create Ticket Type"}
+                        </Button>
+                      )}
                     </div>
                   </form>
                 </Form>
@@ -403,20 +514,56 @@ export default function TicketTypesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(ticket)}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-1 cursor-pointer"
                           >
                             <EditIcon className="h-3 w-3" />
                             Edit
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(ticket.id)}
-                            className="flex items-center gap-1 text-destructive hover:text-destructive"
+                          <AlertDialog
+                            open={deleteDialog.open}
+                            onOpenChange={(open) =>
+                              setDeleteDialog((d) => ({ ...d, open }))
+                            }
                           >
-                            <TrashIcon className="h-3 w-3" />
-                            Delete
-                          </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDelete(ticket.id)}
+                              className="flex items-center gap-1 text-destructive hover:text-destructive cursor-pointer"
+                            >
+                              <TrashIcon className="h-3 w-3" />
+                              Delete
+                            </Button>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Delete Ticket Type
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this ticket
+                                  type? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: false,
+                                      ticketId: null,
+                                    })
+                                  }
+                                >
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={confirmDelete}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </div>
                     </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarIcon, PlusCircle, Search } from "lucide-react";
+import { CalendarIcon, PlusCircle, Search, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/atomic/card";
 import { Badge } from "@/components/ui/atomic/badge";
 import { Button } from "@/components/ui/atomic/button";
@@ -14,10 +14,21 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/atomic/tabs";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
 import { EventTypes } from "@/types/event.type";
 import { format } from "date-fns";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import EventService from "@/lib/api/event-service";
 const eventService = new EventService();
@@ -29,6 +40,7 @@ export default function EventsManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -39,8 +51,8 @@ export default function EventsManagementPage() {
         const response = await eventService.getAllEventsByOrganizer(
           Number(session.user.id)
         );
-        setEvents(response.events); // instead of setEvents(response)
-        setFilteredEvents(response.events);
+        setEvents(response);
+        setFilteredEvents(response);
       } catch (err) {
         setError("Failed to fetch events. Please try again.");
         console.error("Error fetching events:", err);
@@ -53,17 +65,29 @@ export default function EventsManagementPage() {
   }, [session?.user?.id]);
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     const applyFilters = () => {
       let filtered = [...events];
 
-      if (searchTerm) {
+      if (debouncedSearchTerm) {
         filtered = filtered.filter(
           (event) =>
-            event.eventName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            event.eventName
+              .toLowerCase()
+              .includes(debouncedSearchTerm.toLowerCase()) ||
             event.description
               .toLowerCase()
-              .includes(searchTerm.toLowerCase()) ||
-            event.location.toLowerCase().includes(searchTerm.toLowerCase())
+              .includes(debouncedSearchTerm.toLowerCase()) ||
+            event.location
+              .toLowerCase()
+              .includes(debouncedSearchTerm.toLowerCase())
         );
       }
 
@@ -71,7 +95,7 @@ export default function EventsManagementPage() {
     };
 
     applyFilters();
-  }, [events, searchTerm]);
+  }, [events, debouncedSearchTerm]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -143,10 +167,18 @@ export default function EventsManagementPage() {
         <Tabs defaultValue="all">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <TabsList>
-              <TabsTrigger value="all">All Events</TabsTrigger>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="inactive">Inactive</TabsTrigger>
-              <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+              <TabsTrigger value="all" className="cursor-pointer">
+                All Events
+              </TabsTrigger>
+              <TabsTrigger value="active" className="cursor-pointer">
+                Active
+              </TabsTrigger>
+              <TabsTrigger value="inactive" className="cursor-pointer">
+                Inactive
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="cursor-pointer">
+                Cancelled
+              </TabsTrigger>
             </TabsList>
 
             <div className="flex items-center gap-3">
@@ -155,13 +187,13 @@ export default function EventsManagementPage() {
                 <Input
                   type="search"
                   placeholder="Search events..."
-                  className="pl-8 w-full md:w-[200px] lg:w-[300px]"
+                  className="pl-8 w-full md:w-[150px] lg:w-[250px]"
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
               </div>
               <Link href="/dashboard/organizer/events/create">
-                <Button>
+                <Button className="cursor-pointer">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Create Event
                 </Button>
@@ -174,6 +206,8 @@ export default function EventsManagementPage() {
               events={filteredEvents}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -182,6 +216,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "ACTIVE")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -190,6 +226,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "INACTIVE")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
 
@@ -198,6 +236,8 @@ export default function EventsManagementPage() {
               events={events.filter((e) => e.status === "CANCELLED")}
               isLoading={isLoading}
               error={error}
+              setEvents={setEvents}
+              setFilteredEvents={setFilteredEvents}
             />
           </TabsContent>
         </Tabs>
@@ -210,11 +250,56 @@ function EventsTable({
   events,
   isLoading,
   error,
+  setEvents,
+  setFilteredEvents,
 }: {
   events: EventTypes[];
   isLoading: boolean;
   error: string | null;
+  setEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
+  setFilteredEvents: React.Dispatch<React.SetStateAction<EventTypes[]>>;
 }) {
+  const { data: session } = useSession();
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    eventId: number | null;
+    eventName: string;
+  }>({
+    isOpen: false,
+    eventId: null,
+    eventName: "",
+  });
+
+  const handleDeleteEvent = async () => {
+    if (!deleteDialog.eventId) return;
+
+    try {
+      await eventService.deleteEvent(
+        deleteDialog.eventId,
+        session?.user?.accessToken
+      );
+      toast.success(`Event "${deleteDialog.eventName}" deleted successfully`);
+
+      // Update both events arrays
+      setEvents((prev) => prev.filter((e) => e.id !== deleteDialog.eventId));
+      setFilteredEvents((prev) =>
+        prev.filter((e) => e.id !== deleteDialog.eventId)
+      );
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setDeleteDialog({ isOpen: false, eventId: null, eventName: "" });
+    }
+  };
+
+  const openDeleteDialog = (eventId: number, eventName: string) => {
+    setDeleteDialog({
+      isOpen: true,
+      eventId,
+      eventName,
+    });
+  };
   if (isLoading) {
     return (
       <Card className="p-8">
@@ -298,7 +383,12 @@ function EventsTable({
                       </div>
                     )}
                     <div>
-                      <p className="font-medium">{event.eventName}</p>
+                      <Link
+                        href={`/dashboard/organizer/events/${event.id}`}
+                        className="font-medium hover:underline"
+                      >
+                        {event.eventName}
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {event.category}
                       </p>
@@ -328,18 +418,17 @@ function EventsTable({
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2 justify-end">
-                    <Link href={`/dashboard/organizer/events/${event.id}`}>
-                      <Button size="sm" variant="outline">
-                        View
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/dashboard/organizer/events/${event.id}/attendees`}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() =>
+                        openDeleteDialog(event.id, event.eventName)
+                      }
+                      className="cursor-pointer"
                     >
-                      <Button size="sm" variant="outline">
-                        Attendees
-                      </Button>
-                    </Link>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </td>
               </tr>
@@ -347,6 +436,33 @@ function EventsTable({
           </tbody>
         </table>
       </div>
+
+      <AlertDialog
+        open={deleteDialog.isOpen}
+        onOpenChange={(open) =>
+          !open &&
+          setDeleteDialog({ isOpen: false, eventId: null, eventName: "" })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteDialog.eventName}
+              &quot;? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteEvent}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

@@ -10,56 +10,11 @@ import {
 } from "@/components/ui/atomic/card";
 import { Input } from "@/components/ui/atomic/input";
 import { Label } from "@/components/ui/atomic/label";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
-import { useState } from "react";
+import { useForgotPassword } from "@/hooks/useForgotPassword";
 
 export default function ForgotPasswordPage() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(
-      z.object({
-        email: z.email("Invalid email address"),
-      })
-    ),
-    defaultValues: { email: "" },
-  });
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function onSubmit(data: { email: string }) {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
-
-      const result = await response.json();
-      if (!response.ok) {
-        toast.error(result.message);
-        setIsLoading(false);
-        return;
-      }
-
-      toast.success("Reset link sent to your email.");
-    } catch (error) {
-      console.error(error);
-      toast.error("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const { register, handleSubmit, errors, isLoading, onSubmit } =
+    useForgotPassword();
 
   return (
     <main>

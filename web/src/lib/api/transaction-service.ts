@@ -1,65 +1,85 @@
+import axios from "axios";
 import { TransactionInput } from "@/types/transaction.types";
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 class TransactionService {
-  private async fetchWithErrorHandling(url: string, options?: RequestInit) {
-    try {
-      const response = await fetch(url, {
-        headers: {
-          "Content-Type": "application/json",
-          ...options?.headers,
-        },
-        ...options,
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("API Error:", error);
-      throw error;
-    }
+  async createTransaction(transactionData: TransactionInput) {
+    const res = await apiClient.post("/transactions", transactionData);
+    return res.data.data;
   }
 
-  async createTransaction(
-    transactionData: TransactionInput
-  ): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/transactions`;
-    return this.fetchWithErrorHandling(url, {
-      method: "POST",
-      body: JSON.stringify(transactionData),
-    });
+  async getTransactionById(transactionId: number) {
+    const res = await apiClient.get(`/transactions/${transactionId}`);
+    return res.data.data;
   }
-
-  async getTransactionById(id: number): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/transactions/${id}`;
-    return this.fetchWithErrorHandling(url);
-  }
-
-  async getAllTransactionsByUser(userId: number): Promise<TransactionInput[]> {
-    const url = `${API_BASE_URL}/transactions/user/${userId}`;
-    const res = await this.fetchWithErrorHandling(url);
-    return res.data;
-  }
-
   async updateTransaction(
-    id: number,
-    transactionData: Partial<TransactionInput>
-  ): Promise<TransactionInput> {
-    const url = `${API_BASE_URL}/transactions/${id}`;
-    return this.fetchWithErrorHandling(url, {
-      method: "PUT",
-      body: JSON.stringify(transactionData),
-    });
+    transactionId: number,
+    transactionData: TransactionInput,
+    token: string
+  ) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.put(
+      `/transactions/${transactionId}`,
+      transactionData,
+      { headers }
+    );
+    return res.data.data;
   }
 
-  async deleteTransaction(id: number): Promise<void> {
-    const url = `${API_BASE_URL}/transactions/${id}`;
-    await this.fetchWithErrorHandling(url, { method: "DELETE" });
+  async deleteTransaction(transactionId: number, token: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.delete(`/transactions/${transactionId}`, {
+      headers,
+    });
+    return res.data.data;
+  }
+  async getTransactionsByUserId(userId: number, token: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.get(`/transactions/user/${userId}`, {
+      headers,
+    });
+    return res.data.data;
+  }
+
+  async getAnalytics(timeRange: string = "this-day", token: string) {
+    const params: { timeRange: string } = { timeRange };
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    const res = await apiClient.get("/transactions/analytics", {
+      params,
+      headers,
+    });
+    return res.data.data;
+  }
+
+  async getTransactionsWaitingConfirmation(token: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.get("/transactions/waiting-confirmation", {
+      headers,
+    });
+    return res.data.data;
+  }
+
+  async updateTransactionStatus(
+    transactionId: number,
+    status: "DONE" | "REJECTED",
+    token: string
+  ) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await apiClient.patch(
+      `/transactions/${transactionId}/status`,
+      { newStatus: status },
+      { headers }
+    );
+    return res.data.data;
   }
 }
 

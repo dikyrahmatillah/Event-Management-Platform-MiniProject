@@ -53,7 +53,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function EventsAnalytics({ timeRange }: EventsAnalyticsProps) {
+export function EventsAnalytics({}: EventsAnalyticsProps) {
   const filteredData = React.useMemo(() => {
     return eventsData;
   }, []);

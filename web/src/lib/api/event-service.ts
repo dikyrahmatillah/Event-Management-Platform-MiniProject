@@ -2,7 +2,7 @@ import axios from "axios";
 import { EventTypes } from "@/types/event.type";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -19,24 +19,50 @@ class EventService {
     const { data } = await apiClient.get(`/events/organizer/${organizerId}`, {
       params,
     });
-    return data;
+    return data.data.events;
   }
 
   async getEventById(id: number) {
     const { data } = await apiClient.get(`/events/details/${id}`);
+    return data.data;
+  }
+
+  async updateEvent(
+    id: number,
+    eventData: Record<string, unknown>,
+    imageFile?: File,
+    token?: string
+  ) {
+    const formData = new FormData();
+
+    Object.entries(eventData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+
+    if (imageFile) {
+      formData.append("imageUrl", imageFile);
+    }
+
+    const { data } = await apiClient.put(`/events/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
     return data;
   }
 
-  async updateEvent(id: number, eventData: Partial<EventTypes>) {
-    const { data } = await apiClient.put<EventTypes>(
-      `/events/${id}`,
-      eventData
-    );
-    return data;
-  }
-
-  async deleteEvent(id: number) {
-    const { data } = await apiClient.delete<EventTypes>(`/events/${id}`);
+  async deleteEvent(id: number, token?: string) {
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const { data } = await apiClient.delete(`/events/${id}`, {
+      headers,
+    });
     return data;
   }
 
@@ -53,7 +79,7 @@ class EventService {
   }
 
   async createEvent(eventData: Omit<EventTypes, "id">) {
-    const { data } = await apiClient.post<EventTypes>("/events", eventData);
+    const { data } = await apiClient.post("/events", eventData);
     return data;
   }
 

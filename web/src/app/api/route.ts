@@ -68,4 +68,4 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(mockUsers);
 }
 
-export async function POST(request: NextRequest) {}
+export async function POST() {}

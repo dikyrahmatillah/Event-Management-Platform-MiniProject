@@ -53,7 +53,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function TicketsAnalytics({ timeRange }: TicketsAnalyticsProps) {
+export function TicketsAnalytics({}: TicketsAnalyticsProps) {
   const filteredData = React.useMemo(() => {
     return ticketSalesData;
   }, []);

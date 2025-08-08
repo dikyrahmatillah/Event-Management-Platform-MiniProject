@@ -18,6 +18,11 @@ function addMonths(date: Date, months: number): Date {
   return result;
 }
 
+function generateIndonesianPhoneNumber(): string {
+  const number = faker.string.numeric(faker.number.int({ min: 9, max: 10 }));
+  return `+628${number}`;
+}
+
 async function seed() {
   try {
     console.log("🌱 Starting database seeding...");
@@ -46,7 +51,7 @@ async function seed() {
         password: hashedPassword,
         firstName: faker.person.firstName().slice(0, 100),
         lastName: "Organizer",
-        phone: "+1234567890",
+        phone: generateIndonesianPhoneNumber(),
         role: "ORGANIZER",
         profilePicture: faker.image.avatar(),
         referralCode: generateReferralCode(),
@@ -63,7 +68,7 @@ async function seed() {
         password: hashedPassword,
         firstName: faker.person.firstName().slice(0, 100),
         lastName: faker.person.lastName().slice(0, 100),
-        phone: faker.phone.number().slice(0, 20),
+        phone: generateIndonesianPhoneNumber(),
         role: "CUSTOMER",
         profilePicture: faker.image.avatar(),
         referralCode: generateReferralCode(),
@@ -74,14 +79,14 @@ async function seed() {
     customers.push(customer1);
     console.log(`✅ Created customer 1:`, customer1.email);
 
-    for (let i = 2; i <= 10; i++) {
+    for (let i = 2; i <= 5; i++) {
       const customer = await prisma.user.create({
         data: {
           email: `customer${i}@example.com`,
           password: hashedPassword,
           firstName: faker.person.firstName().slice(0, 100),
           lastName: faker.person.lastName().slice(0, 100),
-          phone: faker.phone.number().slice(0, 20),
+          phone: generateIndonesianPhoneNumber(),
           role: "CUSTOMER",
           profilePicture: faker.image.avatar(),
           referralCode: generateReferralCode(),
@@ -122,13 +127,34 @@ async function seed() {
       });
     }
 
-    const eventStatuses = ["ACTIVE", "INACTIVE", "CANCELLED"] as const;
+    // const eventStatuses = ["ACTIVE", "INACTIVE", "CANCELLED"] as const;
+    const eventStatuses = "ACTIVE" as const;
     const events = [];
 
-    for (let i = 0; i < 10; i++) {
-      const status = eventStatuses[i % eventStatuses.length];
+    for (let i = 0; i < 5; i++) {
+      // const status = eventStatuses[i % eventStatuses.length];
+      const status = eventStatuses;
       const eventPrices = [50000, 100000, 150000, 200000];
-      const seats = faker.helpers.arrayElement([50, 100, 200, 500]);
+      const ticketTypesName = [
+        "Regular",
+        "VIP",
+        "Early Bird",
+        "Group",
+        "Student",
+      ];
+      const ticketPrices = [50000, 100000, 200000];
+      // Prepare ticketType data and sum total seats
+      const ticketTypeData = ticketTypesName.map((name) => {
+        const qty = 50;
+        return {
+          typeName: name,
+          description: faker.lorem.sentence(),
+          price: faker.helpers.arrayElement(ticketPrices),
+          quantity: qty,
+          availableQuantity: qty,
+        };
+      });
+      const totalSeats = ticketTypeData.reduce((sum, t) => sum + t.quantity, 0);
       const event = await prisma.event.create({
         data: {
           organizerId: organizer.id,
@@ -139,31 +165,26 @@ async function seed() {
           price: faker.helpers.arrayElement(eventPrices),
           startDate: faker.date.future(),
           endDate: faker.date.future(),
-          totalSeats: seats,
-          availableSeats: seats,
+          totalSeats: totalSeats,
+          availableSeats: totalSeats, // will update after transactions
           imageUrl: faker.image.urlPicsumPhotos(),
           status,
         },
       });
-      events.push(event);
-      console.log(`✅ Created event: ${event.eventName} [${status}]`);
-
+      // Create ticketTypes with eventId
       const ticketTypes = [];
-      for (let j = 0; j < 5; j++) {
-        const ticketPrices = [50000, 100000, 200000];
+      for (let j = 0; j < ticketTypeData.length; j++) {
         const ticketType = await prisma.ticketType.create({
           data: {
+            ...ticketTypeData[j],
             eventId: event.id,
-            typeName: `Ticket ${j + 1} for Event ${i + 1}`,
-            description: faker.lorem.sentence(),
-            price: faker.helpers.arrayElement(ticketPrices),
-            quantity: faker.number.int({ min: 20, max: 100 }),
-            availableQuantity: faker.number.int({ min: 0, max: 10 }),
           },
         });
         ticketTypes.push(ticketType);
         console.log(`🎟️  Ticket ${j + 1} for Event ${i + 1} created`);
       }
+      events.push(event);
+      console.log(`✅ Created event: ${event.eventName} [${status}]`);
 
       const transactionStatuses = [
         "WAITING_PAYMENT",
@@ -175,13 +196,57 @@ async function seed() {
       ] as const;
 
       for (let k = 0; k < ticketTypes.length; k++) {
-        const ticketType = ticketTypes[k];
+        let ticketType = ticketTypes[k];
+        let available = ticketType.availableQuantity;
         for (let t = 0; t < 5; t++) {
+          if (available <= 0) break;
           const transactionStatus =
             transactionStatuses[(i + k + t) % transactionStatuses.length];
           const customer = customers[(i + k + t) % customers.length];
-          const quantity = faker.number.int({ min: 1, max: 3 });
+          let quantity = faker.number.int({ min: 1, max: 3 });
+          if (quantity > available) quantity = available;
+          if (quantity <= 0) continue;
           const subtotal = Number(ticketType.price) * quantity;
+
+          // Generate realistic createdAt/paymentDeadline/updatedAt for DONE transactions
+          let createdAt = new Date();
+          let updatedAt = createdAt;
+          let paymentDeadline = faker.date.future();
+          if (transactionStatus === "DONE") {
+            const now = new Date();
+            const randomType = faker.number.int({ min: 1, max: 3 });
+            if (randomType === 1) {
+              // Today
+              createdAt = faker.date.between({
+                from: new Date(now.setHours(0, 0, 0, 0)),
+                to: new Date(),
+              });
+            } else if (randomType === 2) {
+              // This month
+              const startOfMonth = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                1
+              );
+              createdAt = faker.date.between({
+                from: startOfMonth,
+                to: new Date(),
+              });
+            } else {
+              // Last 6 months
+              const sixMonthsAgo = new Date(
+                now.getFullYear(),
+                now.getMonth() - 6,
+                now.getDate()
+              );
+              createdAt = faker.date.between({
+                from: sixMonthsAgo,
+                to: new Date(),
+              });
+            }
+            updatedAt = createdAt;
+            paymentDeadline = faker.date.soon({ days: 3, refDate: createdAt });
+          }
 
           const transaction = await prisma.transaction.create({
             data: {
@@ -195,7 +260,9 @@ async function seed() {
               finalAmount: subtotal,
               status: transactionStatus,
               paymentProof: null,
-              paymentDeadline: faker.date.future(),
+              paymentDeadline,
+              createdAt,
+              updatedAt,
             },
           });
 
@@ -209,11 +276,140 @@ async function seed() {
             },
           });
 
+          // Decrement available quantity for this ticket type
+          available -= quantity;
+          await prisma.ticketType.update({
+            where: { id: ticketType.id },
+            data: { availableQuantity: available },
+          });
+
+          // Log transaction
           console.log(
-            `🧾 Transaction for ${customer.email} on ${event.eventName} [${transactionStatus}]`
+            `🧾 Transaction for ${customer.email} on ${event.eventName} [${transactionStatus}] (qty: ${quantity}, remaining: ${available})`
           );
         }
       }
+
+      // --- Special transactions for customer1 (points) and customer2 (coupon) ---
+      // Only run for the first event/ticketType for demo
+      if (i === 0 && ticketTypes.length > 0) {
+        const ticketType = ticketTypes[0];
+        // Customer1 uses points
+        const customer1Points = await prisma.point.findFirst({
+          where: { userId: customers[0].id },
+        });
+        const pointsToUse = customer1Points
+          ? Math.min(customer1Points.balance, Number(ticketType.price))
+          : 0;
+        if (pointsToUse > 0) {
+          const subtotal = Number(ticketType.price);
+          const finalAmount = subtotal - pointsToUse;
+          const specialTx = await prisma.transaction.create({
+            data: {
+              userId: customers[0].id,
+              eventId: event.id,
+              transactionCode: generateUniqueCode("POINTS", 6),
+              quantity: 1,
+              subtotal,
+              discountAmount: pointsToUse,
+              pointsUsed: pointsToUse,
+              finalAmount: finalAmount < 0 ? 0 : finalAmount,
+              status: "WAITING_CONFIRMATION",
+              paymentProof: null,
+              paymentDeadline: faker.date.soon({ days: 3 }),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+          await prisma.transactionDetail.create({
+            data: {
+              transactionId: specialTx.id,
+              ticketTypeId: ticketType.id,
+              quantity: 1,
+              unitPrice: ticketType.price,
+              totalPrice: subtotal,
+            },
+          });
+          // Deduct points
+          if (customer1Points) {
+            await prisma.point.update({
+              where: { id: customer1Points.id },
+              data: {
+                pointsUsed: pointsToUse,
+                balance: customer1Points.balance - pointsToUse,
+              },
+            });
+          }
+          // Log
+          console.log(
+            `⭐ Special transaction for customer1 using points: -${pointsToUse} points`
+          );
+        }
+
+        // Customer2 uses coupon
+        const customer2Coupon = await prisma.coupon.findFirst({
+          where: { userId: customers[1].id, status: "ACTIVE" },
+        });
+        if (customer2Coupon) {
+          const subtotal = Number(ticketType.price);
+          const discount = Number(customer2Coupon.discountAmount) || 0;
+          const finalAmount = subtotal - discount;
+          const specialTx = await prisma.transaction.create({
+            data: {
+              userId: customers[1].id,
+              eventId: event.id,
+              transactionCode: generateUniqueCode("COUPON", 6),
+              quantity: 1,
+              subtotal,
+              discountAmount: discount,
+              pointsUsed: 0,
+              finalAmount: finalAmount < 0 ? 0 : finalAmount,
+              status: "WAITING_CONFIRMATION",
+              paymentProof: null,
+              paymentDeadline: faker.date.soon({ days: 3 }),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+          });
+          await prisma.transactionDetail.create({
+            data: {
+              transactionId: specialTx.id,
+              ticketTypeId: ticketType.id,
+              quantity: 1,
+              unitPrice: ticketType.price,
+              totalPrice: subtotal,
+            },
+          });
+          // Mark coupon as used
+          await prisma.coupon.update({
+            where: { id: customer2Coupon.id },
+            data: { status: "USED" },
+          });
+          // Link coupon to transaction
+          await prisma.transactionCoupon.create({
+            data: {
+              transactionId: specialTx.id,
+              couponId: customer2Coupon.id,
+              discountApplied: discount,
+            },
+          });
+          // Log
+          console.log(
+            `🎫 Special transaction for customer2 using coupon: -${discount} coupon`
+          );
+        }
+      }
+      const updatedTicketTypes = await prisma.ticketType.findMany({
+        where: { eventId: event.id },
+      });
+      const updatedAvailableSeats = updatedTicketTypes.reduce(
+        (sum, t) => sum + t.availableQuantity,
+        0
+      );
+      await prisma.event.update({
+        where: { id: event.id },
+        data: { availableSeats: updatedAvailableSeats },
+      });
     }
 
     const allTransactions = await prisma.transaction.findMany();

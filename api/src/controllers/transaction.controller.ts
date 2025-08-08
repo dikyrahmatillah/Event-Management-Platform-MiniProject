@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { TransactionService } from "@/services/transaction.service.js";
+import { AppError } from "@/errors/app.error.js";
 
 export class TransactionController {
   private transactionService = new TransactionService();
@@ -34,6 +35,29 @@ export class TransactionController {
       return response.status(200).json({
         message: "Transaction retrieved successfully",
         data: transaction,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateTransactionStatus = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const transactionId = Number(request.params.transactionId);
+      const { newStatus } = request.body;
+
+      const updatedTransactionStatus =
+        await this.transactionService.updateTransactionStatus(
+          transactionId,
+          newStatus
+        );
+      return response.status(200).json({
+        message: "Transaction status updated successfully",
+        data: updatedTransactionStatus,
       });
     } catch (error) {
       next(error);
@@ -92,6 +116,49 @@ export class TransactionController {
       return response.status(200).json({
         message: "Transactions retrieved successfully",
         data: transactions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getTransactionsWaitingConfirmation = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const organizerId = request.user?.id;
+      const transactions =
+        await this.transactionService.getTransactionsWaitingConfirmation(
+          organizerId
+        );
+      return response.status(200).json({
+        message: "Waiting confirmation transactions retrieved successfully",
+        data: transactions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getAnalytics = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { timeRange } = request.query;
+      const organizerId = request.user?.id;
+
+      const analytics = await this.transactionService.getAnalytics(
+        (timeRange as string) || "this-day",
+        organizerId
+      );
+
+      return response.status(200).json({
+        message: "Analytics retrieved successfully",
+        data: analytics,
       });
     } catch (error) {
       next(error);

@@ -5,18 +5,39 @@ import { NextFunction, Request, Response } from "express";
 export class CouponController {
   private couponService = new CouponService();
 
-  async createCoupon(request: Request, response: Response, next: NextFunction) {
+  getUserCoupons = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
     try {
-      const data = { ...request.body, userId: request.user.id };
-      const validatedData = couponSchema.parse(data);
-      const coupon = await this.couponService.createCoupon(validatedData);
-      return response
-        .status(201)
-        .json({ message: "Coupon created successfully" });
+      const userId = parseInt(request.params.userId);
+      const coupons = await this.couponService.getUserCoupons(userId);
+      return response.status(200).json({
+        message: "User coupons retrieved successfully",
+        data: coupons,
+      });
     } catch (error) {
       next(error);
     }
-  }
+  };
+
+  getActiveCoupons = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const userId = parseInt(request.params.userId);
+      const coupons = await this.couponService.getActiveCoupons(userId);
+      return response.status(200).json({
+        message: "Active coupons retrieved successfully",
+        data: coupons,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const couponController = new CouponController();

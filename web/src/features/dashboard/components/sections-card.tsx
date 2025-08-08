@@ -1,6 +1,3 @@
-import { FaArrowTrendUp as IconTrendingUp, FaTicket } from "react-icons/fa6";
-
-import { Badge } from "@/components/ui/atomic/badge";
 import {
   Card,
   CardDescription,
@@ -9,43 +6,39 @@ import {
   CardTitle,
 } from "@/components/ui/atomic/card";
 
-import { chartData } from "@/app/dashboard/organizer/data/chart-data";
-interface SectionCardsProps {
-  timeRange: string;
+interface AnalyticsData {
+  totalRevenue: number;
+  totalAttendees: number;
+  dailyData: Array<{
+    date: string;
+    revenue: number;
+    attendee: number;
+  }>;
 }
 
-export function SectionCards({ timeRange }: SectionCardsProps) {
-  const dateNow = new Date();
+interface SectionCardsProps {
+  data?: AnalyticsData | null;
+  loading?: boolean;
+}
 
-  let revenue = 0;
-  let ticketsSold = 0;
+export function SectionCards({ data, loading }: SectionCardsProps) {
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+            </CardHeader>
+            <CardDescription className="text-2xl font-bold">--</CardDescription>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
-  chartData.forEach((item) => {
-    const date = new Date(item.date);
-    if (timeRange === "this-day") {
-      if (
-        date.getFullYear() === dateNow.getFullYear() &&
-        date.getMonth() === dateNow.getMonth() &&
-        date.getDate() === dateNow.getDate()
-      ) {
-        revenue += item.revenue;
-        ticketsSold += item.tickets;
-      }
-    } else if (timeRange === "this-month") {
-      if (
-        date.getFullYear() === dateNow.getFullYear() &&
-        date.getMonth() === dateNow.getMonth()
-      ) {
-        revenue += item.revenue;
-        ticketsSold += item.tickets;
-      }
-    } else if (timeRange === "this-year") {
-      if (date.getFullYear() === dateNow.getFullYear()) {
-        revenue += item.revenue;
-        ticketsSold += item.tickets;
-      }
-    }
-  });
+  const revenue = data?.totalRevenue || 0;
+  const attendees = data?.totalAttendees || 0;
 
   return (
     <div className="*:data-[slot=card]:from-primary/4 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2">
@@ -55,7 +48,11 @@ export function SectionCards({ timeRange }: SectionCardsProps) {
             <CardDescription>Total Revenue</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            Rp {revenue.toLocaleString("id-ID")}
+            {loading ? (
+              <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+            ) : (
+              `Rp ${revenue.toLocaleString("id-ID")}`
+            )}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
@@ -70,11 +67,17 @@ export function SectionCards({ timeRange }: SectionCardsProps) {
             <CardDescription>Attendees</CardDescription>
           </div>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl flex items-center gap-2">
-            {ticketsSold}
+            {loading ? (
+              <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+            ) : (
+              attendees
+            )}
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="text-muted-foreground">Across all active events</div>
+          <div className="text-muted-foreground">
+            Total attendees across all events
+          </div>
         </CardFooter>
       </Card>
     </div>

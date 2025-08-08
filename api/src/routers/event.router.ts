@@ -23,8 +23,19 @@ router.post(
 router.get("/organizer/:id", eventController.getAllEventsByOrganizer);
 router.get("/details/:id", eventController.getEventById);
 
-router.put("/:id", upload.single("imageUrl"), eventController.updateEvent);
-router.delete("/:id", eventController.deleteEvent);
+router.put(
+  "/:id",
+  verifyToken,
+  verifyOrganizer,
+  upload.single("imageUrl"),
+  eventController.updateEvent
+);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyOrganizer,
+  eventController.deleteEvent
+);
 router.get("/organizer/my-events", eventController.getMyEvents);
 
 export default router;

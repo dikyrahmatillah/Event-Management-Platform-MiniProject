@@ -21,6 +21,7 @@ import {
   TicketIcon,
   EditIcon,
   ArrowLeftIcon,
+  Trash2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +30,17 @@ import EventService from "@/lib/api/event-service";
 import { EventTypes } from "@/types/event.type";
 import { ticketService } from "@/lib/api/ticket-service";
 import { TicketTypes } from "@/types/ticket.types";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/atomic/alert-dialog";
 
 // Helper function to check valid date
 function isValidDate(date: unknown) {
@@ -47,6 +59,21 @@ export default function EventDetailPage() {
   const [ticketTypes, setTicketTypes] = useState<TicketTypes[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const handleDeleteEvent = async () => {
+    if (!event) return;
+    try {
+      await eventService.deleteEvent(event.id, session?.user?.accessToken);
+      toast.success(`Event "${event.eventName}" deleted successfully`);
+      router.push("/dashboard/organizer/events");
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      toast.error("Failed to delete event. Please try again.");
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
 
   useEffect(() => {
     const fetchEventAndTickets = async () => {
@@ -54,11 +81,9 @@ export default function EventDetailPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch event details first
         const data = await eventService.getEventById(Number(params.id));
         setEvent(data);
 
-        // Fetch tickets separately - if this fails, we still show the event
         try {
           const token = session?.user?.accessToken;
           const ticketData = await ticketService.getTicketsByEventId(
@@ -68,7 +93,6 @@ export default function EventDetailPage() {
           setTicketTypes(ticketData);
         } catch (ticketError) {
           console.warn("Failed to fetch tickets:", ticketError);
-          // Set empty array for tickets but don't fail the whole page
           setTicketTypes([]);
         }
       } catch (error) {
@@ -162,7 +186,11 @@ export default function EventDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-60 text-muted-foreground">
         <span className="text-lg font-semibold mb-2">Event not found.</span>
-        <Button variant="outline" onClick={() => router.back()}>
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="cursor-pointer"
+        >
           Back
         </Button>
       </div>
@@ -186,89 +214,88 @@ export default function EventDetailPage() {
           <Button
             variant="outline"
             onClick={() => router.back()}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Back
           </Button>
         </div>
-        {/* Main Content Card */}
         <Card className="shadow-sm">
-          {/* Event Header */}
           <CardHeader className="border-b bg-muted/30">
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col md:flex-row md:items-center gap-6">
-                <div className="flex-shrink-0">
-                  {event.imageUrl ? (
-                    <Image
-                      src={event.imageUrl}
-                      alt={event.eventName || "Event image"}
-                      width={140}
-                      height={140}
-                      className="rounded-lg object-cover border shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-[140px] h-[140px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
-                      <CalendarIcon className="h-16 w-16 text-muted-foreground" />
-                    </div>
+              <div className="flex justify-center mb-4">
+                {event.imageUrl ? (
+                  <Image
+                    src={event.imageUrl}
+                    alt={event.eventName || "Event image"}
+                    width={1200}
+                    height={320}
+                    className="rounded-lg object-cover border shadow-sm w-full h-[160px] md:h-[240px]"
+                  />
+                ) : (
+                  <div className="w-full h-[160px] md:h-[240px] bg-muted rounded-lg flex items-center justify-center border shadow-sm">
+                    <CalendarIcon className="h-16 w-16 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant={
+                      event.status === "ACTIVE" ? "default" : "secondary"
+                    }
+                    className={
+                      event.status === "ACTIVE"
+                        ? "bg-green-100 text-green-800 hover:bg-green-200"
+                        : event.status === "INACTIVE"
+                        ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+                        : "bg-red-100 text-red-800 hover:bg-red-200"
+                    }
+                  >
+                    {event.status || "Unknown"}
+                  </Badge>
+                  {event.category && (
+                    <Badge variant="outline" className="text-xs">
+                      {event.category}
+                    </Badge>
                   )}
                 </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge
-                      variant={
-                        event.status === "ACTIVE" ? "default" : "secondary"
-                      }
-                      className={
-                        event.status === "ACTIVE"
-                          ? "bg-green-100 text-green-800 hover:bg-green-200"
-                          : event.status === "INACTIVE"
-                          ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                          : "bg-red-100 text-red-800 hover:bg-red-200"
-                      }
-                    >
-                      {event.status || "Unknown"}
-                    </Badge>
-                    {event.category && (
-                      <Badge variant="outline" className="text-xs">
-                        {event.category}
-                      </Badge>
+                <CardTitle className="text-2xl md:text-3xl font-bold">
+                  {event.eventName || (
+                    <span className="italic text-muted-foreground">
+                      No name
+                    </span>
+                  )}
+                </CardTitle>
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    {isValidDate(event.startDate) ? (
+                      format(new Date(event.startDate as string), "PPP 'at' p")
+                    ) : (
+                      <span className="italic">Not specified</span>
                     )}
                   </div>
-                  <CardTitle className="text-2xl md:text-3xl font-bold">
-                    {event.eventName || (
-                      <span className="italic text-muted-foreground">
-                        No name
-                      </span>
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4" />
+                    {event.location || (
+                      <span className="italic">No location</span>
                     )}
-                  </CardTitle>
-
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      {isValidDate(event.startDate) ? (
-                        format(
-                          new Date(event.startDate as string),
-                          "PPP 'at' p"
-                        )
-                      ) : (
-                        <span className="italic">Not specified</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPinIcon className="h-4 w-4" />
-                      {event.location || (
-                        <span className="italic">No location</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <UsersIcon className="h-4 w-4" />
-                      {typeof event.availableSeats === "number" &&
-                      typeof event.totalSeats === "number" ? (
-                        `${event.availableSeats} / ${event.totalSeats} seats`
-                      ) : (
-                        <span className="italic">No seats info</span>
-                      )}
-                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <UsersIcon className="h-4 w-4" />
+                    {typeof event.availableSeats === "number" &&
+                    typeof event.totalSeats === "number" ? (
+                      `${event.availableSeats} / ${event.totalSeats} seats`
+                    ) : (
+                      <span className="italic">No seats info</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CreditCardIcon className="h-4 w-4" />
+                    {event.price
+                      ? `IDR ${parseInt(event.price).toLocaleString()}`
+                      : "Free event"}
                   </div>
                 </div>
               </div>
@@ -345,21 +372,15 @@ export default function EventDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-between border-t pt-6 mt-6">
-              <div className="text-sm text-muted-foreground">
-                <p className="flex items-center gap-1">
-                  <CreditCardIcon className="h-4 w-4" />
-                  {event.price
-                    ? `IDR ${parseInt(event.price).toLocaleString()}`
-                    : "Free event"}
-                </p>
-              </div>
-
+            <div className="flex flex-wrap items-center  justify-around border-t pt-6 mt-6">
               <div className="flex flex-wrap gap-3 mt-4 sm:mt-0">
                 <Link
                   href={`/dashboard/organizer/events/${event.id}/ticket-types`}
                 >
-                  <Button variant="default" className="flex items-center gap-2">
+                  <Button
+                    variant="default"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <TicketIcon className="h-4 w-4" />
                     Manage Tickets
                   </Button>
@@ -367,17 +388,54 @@ export default function EventDetailPage() {
                 <Link
                   href={`/dashboard/organizer/events/${event.id}/attendees`}
                 >
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <UsersIcon className="h-4 w-4" />
                     View Attendees
                   </Button>
                 </Link>
                 <Link href={`/dashboard/organizer/events/${event.id}/edit`}>
-                  <Button variant="outline" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <EditIcon className="h-4 w-4" />
                     Edit Event
                   </Button>
                 </Link>
+                <AlertDialog
+                  open={deleteDialogOpen}
+                  onOpenChange={setDeleteDialogOpen}
+                >
+                  <Button
+                    variant="destructive"
+                    className="flex items-center gap-2 cursor-pointer"
+                    onClick={() => setDeleteDialogOpen(true)}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                    Delete Event
+                  </Button>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Event</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete &quot;{event?.eventName}
+                        &quot;? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteEvent}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </CardContent>
