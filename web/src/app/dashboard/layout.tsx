@@ -1,7 +1,6 @@
 import { AppSidebar } from "@/features/dashboard/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/atomic/sidebar";
 import AuthGuard from "./AuthGuard";
-import DashboardNavbar from "@/components/ui/organism/dashboard-navbar";
 
 export default function DashboardLayout({
   children,

@@ -108,7 +108,7 @@ export default function EventDetailsPage() {
             onClick={() => router.back()}
             className="mb-4 text-blue-600 hover:text-blue-800 font-medium"
           >
-            ← Back to Events
+            ← Back
           </button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

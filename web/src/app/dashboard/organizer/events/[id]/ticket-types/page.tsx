@@ -261,7 +261,7 @@ export default function TicketTypesPage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <ArrowLeftIcon className="h-4 w-4" /> Back to Event
+            <ArrowLeftIcon className="h-4 w-4" /> Back
           </Button>
 
           {!showForm && (

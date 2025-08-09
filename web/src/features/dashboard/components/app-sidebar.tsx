@@ -99,7 +99,6 @@ const customerNavigation = [
     items: [
       { title: "My Points", url: "/dashboard/customer/rewards/points" },
       { title: "My Coupons", url: "/dashboard/customer/rewards/coupons" },
-      { title: "Referrals", url: "/dashboard/customer/rewards/referrals" },
     ],
   },
   {

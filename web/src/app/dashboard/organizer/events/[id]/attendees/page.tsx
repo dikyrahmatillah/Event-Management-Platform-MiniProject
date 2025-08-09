@@ -168,7 +168,7 @@ export default function EventAttendeesPage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 self-start cursor-pointer"
           >
-            <ArrowLeftIcon className="h-4 w-4" /> Back to Event
+            <ArrowLeftIcon className="h-4 w-4" /> Back
           </Button>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">

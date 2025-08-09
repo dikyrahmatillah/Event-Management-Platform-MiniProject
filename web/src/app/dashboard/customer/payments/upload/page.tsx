@@ -1,17 +1,17 @@
 import { ComingSoon } from "@/features/dashboard/components/coming-soon";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
 
-export default function CustomerPaymentsPage() {
+export default function UploadProofPage() {
   return (
     <DashboardPageLayout
-      title="My Payments"
-      description="View and manage your payment history, including details and receipts."
+      title="Upload Payment Proof"
+      description="Upload your payment proof to complete the registration process."
       breadcrumbs={[
         { label: "Customer Dashboard", href: "/dashboard/customer" },
-        { label: "My Payments", isActive: true },
+        { label: "Upload Payment Proof", isActive: true },
       ]}
     >
-      <ComingSoon text="Payment management features coming soon..." />
+      <ComingSoon text="Payment proof upload feature coming soon..." />
     </DashboardPageLayout>
   );
 }
