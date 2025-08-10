@@ -1,5 +1,6 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export const useUserActions = () => {
   const { data: session } = useSession();
@@ -22,13 +23,13 @@ export const useUserActions = () => {
         localStorage.clear();
         sessionStorage.clear();
       }
-
+      toast.success("Successfully signed out.");
       await signOut({
-        redirectTo: "/",
-        callbackUrl: window.location.origin,
+        callbackUrl: "/",
       });
     } catch (error) {
       console.error("Error during sign out:", error);
+      toast.error("Failed to sign out. Please try again.");
       if (typeof window !== "undefined") {
         window.location.href = "/";
       }

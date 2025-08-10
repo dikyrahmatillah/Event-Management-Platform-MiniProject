@@ -1,17 +1,16 @@
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
 import { ComingSoon } from "@/features/dashboard/components/coming-soon";
-
-export default function Analytics() {
+export default function PromotionsPage() {
   return (
     <DashboardPageLayout
-      title="Analytics"
-      description="View detailed analytics and performance metrics for your events"
+      title="Promotions"
+      description="Manage your event promotions"
       breadcrumbs={[
         { label: "Organizer Dashboard", href: "/dashboard/organizer" },
-        { label: "Analytics", href: "/dashboard/organizer/analytics" },
+        { label: "Promotions", href: "/dashboard/organizer/promotions" },
       ]}
     >
-      <ComingSoon text="Analytics features are coming soon! Stay tuned for updates." />
+      <ComingSoon text="Promotion management features are coming soon! Stay tuned for updates." />
     </DashboardPageLayout>
   );
 }

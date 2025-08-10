@@ -21,7 +21,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
       try {
         const response = await fetch(
-          "http://localhost:8000/api/v1/auth/profile",
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/profile`,
           {
             headers: {
               Authorization: `Bearer ${session.user.accessToken}`,

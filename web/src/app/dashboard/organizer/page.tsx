@@ -1,4 +1,4 @@
-import { OrganizerDashboardView } from "@/features/dashboard";
+import { OrganizerDashboardView } from "@/features/dashboard/organizer/views/dashboard-view";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
@@ -8,17 +8,14 @@ export default async function Page() {
   if (!session?.user) {
     redirect("/auth/sign-in");
   }
-
-  const breadcrumbs = [
-    { label: "Organizer Dashboard", href: "/dashboard/organizer" },
-    { label: "Overview", isActive: true },
-  ];
-
   return (
     <DashboardPageLayout
       title={`Welcome back, ${session.user.name || "Organizer"}`}
       description="Manage your events and view analytics"
-      breadcrumbs={breadcrumbs}
+      breadcrumbs={[
+        { label: "Dashboard", href: "/dashboard" },
+        { label: "Organizer Dashboard", href: "/dashboard/organizer" },
+      ]}
     >
       <OrganizerDashboardView />
     </DashboardPageLayout>

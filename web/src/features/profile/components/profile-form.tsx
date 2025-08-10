@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { toast } from "sonner";
 import { UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/atomic/button";
@@ -24,6 +24,7 @@ import {
 import { Input } from "@/components/ui/atomic/input";
 import { ProfileFormInput } from "../schema/profile.schema";
 import { Copy } from "lucide-react";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 interface ProfileFormProps {
   form: UseFormReturn<ProfileFormInput>;
@@ -40,6 +41,7 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
     navigator.clipboard.writeText(value);
     toast.success("Referral code copied!");
   };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -133,38 +135,26 @@ export const ProfileForm: React.FC<ProfileFormProps> = ({
           )}
         />
         <div className="flex justify-end">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                type="button"
-                className="cursor-pointer"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Saving..." : "Save Changes"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Save Profile Changes</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to save the changes to your profile?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction asChild>
-                  <button
-                    type="button"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded cursor-pointer"
-                    disabled={isSubmitting}
-                    onClick={() => formRef.current?.requestSubmit()}
-                  >
-                    {isSubmitting ? "Saving..." : "Save Changes"}
-                  </button>
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            type="button"
+            className="cursor-pointer"
+            disabled={isSubmitting}
+            onClick={() => setIsDialogOpen(true)}
+          >
+            {isSubmitting ? "Saving..." : "Save Changes"}
+          </Button>
+          <ConfirmDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            title="Confirm Changes"
+            description="Are you sure you want to save these changes?"
+            confirmLabel="Save Changes"
+            cancelLabel="Cancel"
+            onConfirm={() => {
+              formRef.current?.requestSubmit();
+              setIsDialogOpen(false);
+            }}
+          />
         </div>
       </form>
     </Form>

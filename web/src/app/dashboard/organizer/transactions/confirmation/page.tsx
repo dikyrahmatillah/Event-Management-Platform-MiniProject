@@ -12,17 +12,6 @@ import {
 import { Button } from "@/components/ui/atomic/button";
 import { Badge } from "@/components/ui/atomic/badge";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/atomic/alert-dialog";
-import {
   Table,
   TableBody,
   TableCell,
@@ -42,12 +31,16 @@ import { transactionService } from "@/lib/api/transaction-service";
 import { Transaction } from "@/types/transaction.types";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 export default function TransactionConfirmationPage() {
   const { data: session } = useSession();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<number | null>(null);
+  const [dialogState, setDialogState] = useState<{
+    id: number;
+    action: "approve" | "reject";
+  } | null>(null);
 
   const loadTransactions = useCallback(async () => {
     if (!session?.user?.accessToken) return;
@@ -72,7 +65,7 @@ export default function TransactionConfirmationPage() {
   ) => {
     if (!session?.user?.accessToken) return;
 
-    setProcessingId(transactionId);
+    setDialogState(null);
     try {
       await transactionService.updateTransactionStatus(
         transactionId,
@@ -92,8 +85,6 @@ export default function TransactionConfirmationPage() {
     } catch (error) {
       console.error("Error updating transaction:", error);
       toast.error("Failed to update transaction status");
-    } finally {
-      setProcessingId(null);
     }
   };
 
@@ -257,95 +248,76 @@ export default function TransactionConfirmationPage() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    disabled={processingId === transaction.id}
-                                    className="cursor-pointer"
-                                  >
-                                    <CheckCircleIcon className="h-4 w-4 mr-1" />
-                                    Approve
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Approve Transaction
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to approve
-                                      transaction{" "}
-                                      <span className="font-mono">
-                                        {transaction.transactionCode}
-                                      </span>
-                                      ? This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        handleStatusUpdate(
-                                          transaction.id,
-                                          "DONE"
-                                        )
-                                      }
-                                    >
-                                      Approve
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                disabled={
+                                  dialogState?.id === transaction.id &&
+                                  dialogState?.action === "approve"
+                                }
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  setDialogState({
+                                    id: transaction.id,
+                                    action: "approve",
+                                  })
+                                }
+                              >
+                                <CheckCircleIcon className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <ConfirmDialog
+                                open={
+                                  dialogState?.id === transaction.id &&
+                                  dialogState?.action === "approve"
+                                }
+                                onOpenChange={(open) => {
+                                  if (!open) setDialogState(null);
+                                }}
+                                title="Approve Transaction"
+                                description="Are you sure you want to approve this transaction? This action cannot be undone."
+                                confirmLabel="Approve"
+                                cancelLabel="Cancel"
+                                onConfirm={() =>
+                                  handleStatusUpdate(transaction.id, "DONE")
+                                }
+                              />
 
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    disabled={processingId === transaction.id}
-                                    className="cursor-pointer"
-                                  >
-                                    <XCircleIcon className="h-4 w-4 mr-1" />
-                                    Reject
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                      Reject Transaction
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      Are you sure you want to reject
-                                      transaction{" "}
-                                      <span className="font-mono">
-                                        {transaction.transactionCode}
-                                      </span>
-                                      ? This will refund any points used and
-                                      restore event seats.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() =>
-                                        handleStatusUpdate(
-                                          transaction.id,
-                                          "REJECTED"
-                                        )
-                                      }
-                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                      Reject
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={
+                                  dialogState?.id === transaction.id &&
+                                  dialogState?.action === "reject"
+                                }
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  setDialogState({
+                                    id: transaction.id,
+                                    action: "reject",
+                                  })
+                                }
+                              >
+                                <XCircleIcon className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                              <ConfirmDialog
+                                open={
+                                  dialogState?.id === transaction.id &&
+                                  dialogState?.action === "reject"
+                                }
+                                onOpenChange={(open) => {
+                                  if (!open) setDialogState(null);
+                                }}
+                                title="Reject Transaction"
+                                description="Are you sure you want to reject this transaction? This will refund any points used."
+                                confirmLabel="Reject"
+                                cancelLabel="Cancel"
+                                onConfirm={() =>
+                                  handleStatusUpdate(transaction.id, "REJECTED")
+                                }
+                                confirmClassName="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
+                              />
                             </div>
                           </TableCell>
                         </TableRow>
@@ -433,73 +405,73 @@ export default function TransactionConfirmationPage() {
                     </div>
 
                     <div className="flex gap-2 pt-2">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            className="flex-1"
-                            disabled={processingId === transaction.id}
-                          >
-                            <CheckCircleIcon className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Approve Transaction
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to approve this transaction?
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleStatusUpdate(transaction.id, "DONE")
-                              }
-                            >
-                              Approve
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        className="flex-1"
+                        disabled={
+                          dialogState?.id === transaction.id &&
+                          dialogState?.action === "approve"
+                        }
+                        onClick={() =>
+                          setDialogState({
+                            id: transaction.id,
+                            action: "approve",
+                          })
+                        }
+                      >
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Approve
+                      </Button>
+                      <ConfirmDialog
+                        open={
+                          dialogState?.id === transaction.id &&
+                          dialogState?.action === "approve"
+                        }
+                        onOpenChange={(open) => {
+                          if (!open) setDialogState(null);
+                        }}
+                        title="Approve Transaction"
+                        description="Are you sure you want to approve this transaction? This action cannot be undone."
+                        confirmLabel="Approve"
+                        cancelLabel="Cancel"
+                        onConfirm={() =>
+                          handleStatusUpdate(transaction.id, "DONE")
+                        }
+                      />
 
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="destructive"
-                            className="flex-1"
-                            disabled={processingId === transaction.id}
-                          >
-                            <XCircleIcon className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Reject Transaction
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to reject this transaction?
-                              This will refund any points used.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() =>
-                                handleStatusUpdate(transaction.id, "REJECTED")
-                              }
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Reject
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="destructive"
+                        className="flex-1"
+                        disabled={
+                          dialogState?.id === transaction.id &&
+                          dialogState?.action === "reject"
+                        }
+                        onClick={() =>
+                          setDialogState({
+                            id: transaction.id,
+                            action: "reject",
+                          })
+                        }
+                      >
+                        <XCircleIcon className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                      <ConfirmDialog
+                        open={
+                          dialogState?.id === transaction.id &&
+                          dialogState?.action === "reject"
+                        }
+                        onOpenChange={(open) => {
+                          if (!open) setDialogState(null);
+                        }}
+                        title="Reject Transaction"
+                        description="Are you sure you want to reject this transaction? This will refund any points used."
+                        confirmLabel="Reject"
+                        cancelLabel="Cancel"
+                        onConfirm={() =>
+                          handleStatusUpdate(transaction.id, "REJECTED")
+                        }
+                        confirmClassName="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
+                      />
                     </div>
                   </CardContent>
                 </Card>

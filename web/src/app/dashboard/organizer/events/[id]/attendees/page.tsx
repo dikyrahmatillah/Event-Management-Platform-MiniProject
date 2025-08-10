@@ -2,16 +2,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AttendeeTable } from "@/features/dashboard/attendees/pages/attendee-table.page";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/atomic/alert-dialog";
 import { attendeeService } from "@/lib/api/attendee-service";
 import { Attendee } from "@/types/attendee.types";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
@@ -32,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/atomic/select";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 export default function EventAttendeesPage() {
   const router = useRouter();
@@ -278,43 +269,19 @@ export default function EventAttendeesPage() {
                   attendees={filteredAttendees}
                   onStatusUpdate={handleStatusUpdate}
                 />
-                <AlertDialog
+                <ConfirmDialog
                   open={statusDialog.open}
                   onOpenChange={(open) =>
-                    setStatusDialog((d) => ({ ...d, open }))
+                    setStatusDialog((prev) => ({ ...prev, open }))
                   }
-                >
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Change Attendee Status
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to change this attendee&apos;s
-                        status to <b>{statusDialog.newStatus}</b>?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel
-                        onClick={() =>
-                          setStatusDialog({
-                            open: false,
-                            attendeeId: null,
-                            newStatus: null,
-                          })
-                        }
-                      >
-                        Cancel
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={confirmStatusUpdate}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90"
-                      >
-                        Confirm
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  title="Update Attendee Status"
+                  description="Are you sure you want to update this attendee's status?"
+                  confirmLabel="Update"
+                  cancelLabel="Cancel"
+                  onConfirm={confirmStatusUpdate}
+                  loading={loading}
+                  confirmClassName="bg-blue-600 hover:bg-blue-700 text-white"
+                />
               </>
             )}
 

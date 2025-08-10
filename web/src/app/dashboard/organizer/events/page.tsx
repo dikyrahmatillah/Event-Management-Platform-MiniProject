@@ -14,16 +14,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/atomic/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/atomic/alert-dialog";
 import { DashboardPageLayout } from "@/features/dashboard/components/dashboard-page-layout";
 import { EventTypes } from "@/types/event.type";
 import { format } from "date-fns";
@@ -31,6 +21,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import EventService from "@/lib/api/event-service";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 const eventService = new EventService();
 
 export default function EventsManagementPage() {
@@ -437,32 +428,18 @@ function EventsTable({
         </table>
       </div>
 
-      <AlertDialog
-        open={deleteDialog.isOpen}
+      <ConfirmDialog
+        open={deleteDialog.isOpen && deleteDialog.eventId !== null}
         onOpenChange={(open) =>
-          !open &&
-          setDeleteDialog({ isOpen: false, eventId: null, eventName: "" })
+          setDeleteDialog((prev) => ({ ...prev, isOpen: open }))
         }
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Event</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteDialog.eventName}
-              &quot;? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteEvent}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title={`Delete Event: ${deleteDialog.eventName}`}
+        description="Are you sure you want to delete this event? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteEvent}
+        confirmClassName="bg-red-600 hover:bg-red-700 text-white"
+      />
     </Card>
   );
 }

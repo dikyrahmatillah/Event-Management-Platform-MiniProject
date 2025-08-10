@@ -9,17 +9,6 @@ import {
 } from "@/components/ui/atomic/form";
 import { Input } from "@/components/ui/atomic/input";
 import { Button } from "@/components/ui/atomic/button";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/atomic/alert-dialog";
 import { Form } from "@/components/ui/atomic/form";
 import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -31,10 +20,12 @@ import {
   changePasswordSchema,
 } from "@/features/profile/schema/change-password.schema";
 import { useChangePassword } from "@/features/profile/hooks/useChangePassword";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 export function ChangePasswordSection() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Add this
 
   const form = useForm<ChangePasswordInput>({
     resolver: zodResolver(changePasswordSchema),
@@ -107,38 +98,26 @@ export function ChangePasswordSection() {
           )}
         />
         <div className="flex justify-end">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                type="button"
-                disabled={isChanging}
-                className="cursor-pointer"
-              >
-                {isChanging ? "Changing..." : "Change Password"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Change Password</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to change your password?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction asChild>
-                  <button
-                    type="button"
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded cursor-pointer"
-                    disabled={isChanging}
-                    onClick={() => formRef.current?.requestSubmit()}
-                  >
-                    {isChanging ? "Changing..." : "Change Password"}
-                  </button>
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            type="button"
+            disabled={isChanging}
+            className="cursor-pointer"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            {isChanging ? "Changing..." : "Change Password"}
+          </Button>
+          <ConfirmDialog
+            open={isDialogOpen}
+            onOpenChange={setIsDialogOpen}
+            title="Confirm Password Change"
+            description="Are you sure you want to change your password?"
+            confirmLabel="Change Password"
+            cancelLabel="Cancel"
+            onConfirm={() => {
+              formRef.current?.requestSubmit();
+              setIsDialogOpen(false);
+            }}
+          />
         </div>
       </form>
     </Form>

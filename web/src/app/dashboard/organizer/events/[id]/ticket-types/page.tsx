@@ -29,20 +29,10 @@ import IDRCurrencyInput from "@/app/dashboard/organizer/events/idr";
 import EventService from "@/lib/api/event-service";
 import { ticketService } from "@/lib/api/ticket-service";
 import { toast } from "sonner";
-import {
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialog,
-  AlertDialogTrigger,
-} from "@/components/ui/atomic/alert-dialog";
 import { EventTypes } from "@/types/event.type";
 import { TicketTypes } from "@/types/ticket.types";
 import { useSession } from "next-auth/react";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 const ticketTypeSchema = z.object({
   typeName: z.string().min(1, "Ticket type name is required"),
@@ -71,6 +61,7 @@ export default function TicketTypesPage() {
     ticketId: number | null;
   }>({ open: false, ticketId: null });
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [pendingFormData, setPendingFormData] =
     useState<TicketTypeFormData | null>(null);
@@ -369,122 +360,81 @@ export default function TicketTypesPage() {
                     />
 
                     <div className="flex justify-end gap-3">
-                      <AlertDialog
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancelForm}
+                        className="cursor-pointer"
+                      >
+                        Cancel
+                      </Button>
+                      <ConfirmDialog
                         open={cancelDialogOpen}
                         onOpenChange={setCancelDialogOpen}
-                      >
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleCancelForm}
-                          className="cursor-pointer"
-                        >
-                          Cancel
-                        </Button>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Cancel</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to cancel? All unsaved
-                              changes will be lost.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel
-                              onClick={() => setCancelDialogOpen(false)}
-                            >
-                              Continue Editing
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={confirmCancelForm}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Yes, Cancel
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                      <AlertDialog
-                        open={updateDialogOpen}
-                        onOpenChange={setUpdateDialogOpen}
-                      >
-                        {editingTicket && (
+                        title="Cancel"
+                        description="Are you sure you want to cancel? All unsaved changes will be lost."
+                        confirmLabel="Cancel"
+                        cancelLabel="Continue Editing"
+                        onConfirm={confirmCancelForm}
+                        confirmClassName="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
+                      />
+
+                      {editingTicket && (
+                        <>
                           <Button
                             type="submit"
                             className="cursor-pointer"
                             disabled={isSubmitting}
+                            onClick={() => setUpdateDialogOpen(true)}
                           >
                             {isSubmitting
                               ? "Updating..."
                               : "Update Ticket Type"}
                           </Button>
-                        )}
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Update Ticket Type
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to update this ticket type?
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel
-                              onClick={() => setUpdateDialogOpen(false)}
-                            >
-                              Cancel
-                            </AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={async () => {
-                                if (pendingFormData) {
-                                  await doSubmit(pendingFormData);
-                                  setUpdateDialogOpen(false);
-                                  setPendingFormData(null);
-                                }
-                              }}
-                              className="bg-primary text-primary-foreground hover:bg-primary/90"
-                            >
-                              Update
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                          <ConfirmDialog
+                            open={updateDialogOpen}
+                            onOpenChange={setUpdateDialogOpen}
+                            title="Update Ticket Type"
+                            description="Are you sure you want to update this ticket type?"
+                            confirmLabel="Update"
+                            cancelLabel="Cancel"
+                            onConfirm={async () => {
+                              if (pendingFormData) {
+                                await doSubmit(pendingFormData);
+                                setUpdateDialogOpen(false);
+                                setPendingFormData(null);
+                              }
+                            }}
+                            loading={isSubmitting}
+                            confirmClassName="bg-primary text-primary-foreground hover:bg-primary/90 text-white"
+                          />
+                        </>
+                      )}
+
                       {!editingTicket && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              type="button"
-                              disabled={isSubmitting}
-                              className="cursor-pointer"
-                            >
-                              {isSubmitting
-                                ? "Creating..."
-                                : "Create Ticket Type"}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Create Ticket Type
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to create this ticket
-                                type?
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => {
-                                  form.handleSubmit(onSubmit)();
-                                }}
-                                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                              >
-                                Create
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <>
+                          <Button
+                            type="button"
+                            disabled={isSubmitting}
+                            className="cursor-pointer"
+                            onClick={() => setCreateDialogOpen(true)}
+                          >
+                            {isSubmitting
+                              ? "Creating..."
+                              : "Create Ticket Type"}
+                          </Button>
+                          <ConfirmDialog
+                            open={createDialogOpen}
+                            onOpenChange={setCreateDialogOpen}
+                            title="Create Ticket Type"
+                            description="Are you sure you want to create this ticket type?"
+                            confirmLabel="Create"
+                            cancelLabel="Cancel"
+                            onConfirm={form.handleSubmit(doSubmit)}
+                            loading={isSubmitting}
+                            confirmClassName="bg-primary text-primary-foreground hover:bg-primary/90 text-white"
+                          />
+                        </>
                       )}
                     </div>
                   </form>
@@ -548,51 +498,31 @@ export default function TicketTypesPage() {
                             <EditIcon className="h-3 w-3" />
                             Edit
                           </Button>
-                          <AlertDialog
-                            open={deleteDialog.open}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(ticket.id)}
+                            className="flex items-center gap-1 text-destructive hover:text-destructive cursor-pointer"
+                          >
+                            <TrashIcon className="h-3 w-3" />
+                            Delete
+                          </Button>
+                          <ConfirmDialog
+                            open={
+                              deleteDialog.open &&
+                              deleteDialog.ticketId === ticket.id
+                            }
                             onOpenChange={(open) =>
                               setDeleteDialog((d) => ({ ...d, open }))
                             }
-                          >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(ticket.id)}
-                              className="flex items-center gap-1 text-destructive hover:text-destructive cursor-pointer"
-                            >
-                              <TrashIcon className="h-3 w-3" />
-                              Delete
-                            </Button>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete Ticket Type
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this ticket
-                                  type? This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel
-                                  onClick={() =>
-                                    setDeleteDialog({
-                                      open: false,
-                                      ticketId: null,
-                                    })
-                                  }
-                                >
-                                  Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={confirmDelete}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                            title="Delete Ticket Type"
+                            description="Are you sure you want to delete this ticket type? This action cannot be undone."
+                            confirmLabel="Delete"
+                            cancelLabel="Cancel"
+                            onConfirm={confirmDelete}
+                            loading={isSubmitting}
+                            confirmClassName="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
+                          />
                         </div>
                       </div>
                     </div>

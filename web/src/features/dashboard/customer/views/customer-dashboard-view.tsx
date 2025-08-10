@@ -2,7 +2,7 @@
 
 import { PointsCard } from "../components/points-card";
 import { CouponsCard } from "../components/coupons-card";
-import { UpcomingEvents } from "../../shared/upcoming-events";
+import { UpcomingEvents } from "@/features/dashboard/shared/upcoming-events";
 
 export function CustomerDashboardView() {
   return (

@@ -31,16 +31,7 @@ import { EventTypes } from "@/types/event.type";
 import { ticketService } from "@/lib/api/ticket-service";
 import { TicketTypes } from "@/types/ticket.types";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/atomic/alert-dialog";
+import { ConfirmDialog } from "@/features/dashboard/components/confirm-dialog";
 
 // Helper function to check valid date
 function isValidDate(date: unknown) {
@@ -405,37 +396,25 @@ export default function EventDetailPage() {
                     Edit Event
                   </Button>
                 </Link>
-                <AlertDialog
+                <Button
+                  variant="destructive"
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                  Delete Event
+                </Button>
+                <ConfirmDialog
                   open={deleteDialogOpen}
                   onOpenChange={setDeleteDialogOpen}
-                >
-                  <Button
-                    variant="destructive"
-                    className="flex items-center gap-2 cursor-pointer"
-                    onClick={() => setDeleteDialogOpen(true)}
-                  >
-                    <Trash2Icon className="h-4 w-4" />
-                    Delete Event
-                  </Button>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete &quot;{event?.eventName}
-                        &quot;? This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDeleteEvent}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  title="Delete Event"
+                  description={`Are you sure you want to delete the event "${event.eventName}"? This action cannot be undone.`}
+                  confirmLabel="Delete"
+                  cancelLabel="Cancel"
+                  onConfirm={handleDeleteEvent}
+                  loading={loading}
+                  confirmClassName="bg-red-600 hover:bg-red-700 text-white"
+                />
               </div>
             </div>
           </CardContent>
