@@ -44,24 +44,20 @@ export default function RegisterForm({ role }: RegisterFormProps) {
         delete formData.phone;
       }
 
-      // Remove profilePicture from form data since we'll handle it separately
       delete formData.profilePicture;
 
       if (role === "CUSTOMER" && formData.referredByCode === "") {
         delete formData.referredByCode;
       }
 
-      // Create FormData for file upload
       const submitData = new FormData();
 
-      // Append all form fields
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           submitData.append(key, value.toString());
         }
       });
 
-      // Append profile image if selected
       if (profileImage) {
         submitData.append("profilePicture", profileImage);
       }
@@ -70,7 +66,7 @@ export default function RegisterForm({ role }: RegisterFormProps) {
         `${process.env.NEXT_PUBLIC_API_URL}/auth/register`,
         {
           method: "POST",
-          body: submitData, // Use FormData instead of JSON
+          body: submitData,
         }
       );
       const data = await response.json();
@@ -107,18 +103,22 @@ export default function RegisterForm({ role }: RegisterFormProps) {
         <div className="flex-1 space-y-2">
           <Label htmlFor="firstName">First Name</Label>
           <Input type="text" id="firstName" {...register("firstName")} />
-          {errors.firstName && <p>{errors.firstName.message}</p>}
+          {errors.firstName && (
+            <p className="text-red-500">{errors.firstName.message}</p>
+          )}
         </div>
         <div className="flex-1 space-y-2">
           <Label htmlFor="lastName">Last Name (optional)</Label>
           <Input type="text" id="lastName" {...register("lastName")} />
-          {errors.lastName && <p>{errors.lastName.message}</p>}
+          {errors.lastName && (
+            <p className="text-red-500">{errors.lastName.message}</p>
+          )}
         </div>
       </div>
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input type="email" id="email" {...register("email")} />
-        {errors.email && <p>{errors.email.message}</p>}
+        {errors.email && <p className="text-red-500">{errors.email.message}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
@@ -137,12 +137,14 @@ export default function RegisterForm({ role }: RegisterFormProps) {
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
-        {errors.password && <p>{errors.password.message}</p>}
+        {errors.password && (
+          <p className="text-red-500">{errors.password.message}</p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="phone">Phone (optional)</Label>
         <Input type="text" id="phone" {...register("phone")} />
-        {errors.phone && <p>{errors.phone.message}</p>}
+        {errors.phone && <p className="text-red-500">{errors.phone.message}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="profilePicture">Profile Picture (optional)</Label>
@@ -208,7 +210,9 @@ export default function RegisterForm({ role }: RegisterFormProps) {
             id="referralCode"
             {...register("referredByCode")}
           />
-          {errors.referredByCode && <p>{errors.referredByCode.message}</p>}
+          {errors.referredByCode && (
+            <p className="text-red-500">{errors.referredByCode.message}</p>
+          )}
         </div>
       )}
       <Button
