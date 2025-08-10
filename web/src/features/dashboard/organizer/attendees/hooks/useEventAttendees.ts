@@ -34,7 +34,7 @@ export function useEventAttendees(eventId: number) {
         token
       );
       setAttendees(attendeeData);
-    } catch (err) {
+    } catch {
       setError("Error fetching attendees. Please try again.");
     } finally {
       setLoading(false);

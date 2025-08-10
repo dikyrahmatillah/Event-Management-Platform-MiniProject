@@ -30,7 +30,6 @@ export default function EventAttendeesPage() {
     setStatusFilter,
     filteredAttendees,
     stats,
-    updateMessage,
     statusDialog,
     handleStatusUpdate,
     confirmStatusUpdate,
@@ -55,18 +54,6 @@ export default function EventAttendeesPage() {
       breadcrumbs={breadcrumbs}
     >
       <div className="px-2 sm:px-4 lg:px-6 max-w-7xl mx-auto">
-        {updateMessage && (
-          <div
-            className={`mb-4 p-3 rounded-md ${
-              updateMessage.includes("Error")
-                ? "bg-red-100 text-red-700 border border-red-300"
-                : "bg-green-100 text-green-700 border border-green-300"
-            }`}
-          >
-            {updateMessage}
-          </div>
-        )}
-
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <Button
             variant="outline"
